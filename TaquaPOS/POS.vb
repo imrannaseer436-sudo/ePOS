@@ -4,6 +4,7 @@ Imports System.Threading.Tasks
 Imports System.Net.Http
 Imports System.Net
 Imports System.IO
+Imports System.Threading
 
 Public Class POS
 
@@ -1311,112 +1312,125 @@ Public Class POS
 
     Private Async Function PrintBillUsingCrystalReport(Id As Long, type As String) As Task
 
-        'Dim rpt As New SaleBill
-        Dim ShopName As String = String.Empty
-        Dim Address As String = String.Empty
-        Dim ContactNo As String = String.Empty
-        Dim GST As String = String.Empty
-        SQL = $"select shopname,address1 + ' ' + address2 + ' ' + city + ' ' +  state address,phone,cst from shops where shopid = {ShopID}"
-        With Await ESSA.OpenReaderAsync(SQL)
-            If Await .ReadAsync Then
-                ShopName = .Item("shopname").trim
-                Address = .Item("address").trim
-                ContactNo = .Item("phone").trim
-                GST = .Item("cst").trim
-            End If
-            .Close()
-        End With
+        Try
 
-        SQL = $"select a.taxperc,sum(a.taxable) taxable,sum(tax) tax  from
-        (select distinct d.pluid,
-        case when d.rate > t.val 
-        then t.mx 
-        else t.mn end as taxperc,
-        case when d.rate > t.val 
-        then ROUND((100/(100+t.mx)) * d.amount,2) 
-        else ROUND((100/(100+t.mn)) * d.amount,2)  end as taxable,
-        case when d.rate > t.val 
-        then ROUND(((100/(100+t.mx)) * d.amount)* t.mx * 0.01,2) 
-        else ROUND(((100/(100+t.mn)) * d.amount)* t.mn * 0.01,2) end as tax
-        from billdetails d 
-        inner join billmaster m on m.billid = d.billid and m.shopid = {ShopID} and m.billid = {Id}
-        inner join productmaster p on p.pluid = d.pluid
-        inner join producttax t on t.hsn = p.hsncode) a
-        group by a.taxperc"
-        ESSA.OpenConnection()
-        Using adapter As New SqlDataAdapter(SQL, Con)
-            Using table As New DataTable
-                Await Task.Run(Sub() adapter.Fill(table))
-                rptSaleBill.Subreports.Item("TaxInfo").SetDataSource(table)
-            End Using
-        End Using
-        Con.Close()
-
-
-        SQL = $"select distinct paymentdesc mode,sum(paid) amt,sum(refund) refund, billid 
-        from billpayments p where shopid = {ShopID} and billid = {Id}
-        group by paymentdesc,billid"
-
-        ESSA.OpenConnection()
-        Using adapter As New SqlDataAdapter(SQL, Con)
-            Using table As New DataTable
-                Await Task.Run(Sub() adapter.Fill(table))
-                rptSaleBill.Subreports.Item("PaymentInfo").SetDataSource(table)
-            End Using
-        End Using
-        Con.Close()
-
-        SQL = $"select 
-        'T' + convert(varchar,m.termid) + '-' + convert(varchar,m.billno) billno,
-        m.billtime date, 
-        d.sno,p.pluname description,d.qty,d.orate rate,d.disamt disc,d.amount,
-        p.plucode barcode,p.hsncode hsn,
-        c.customername name,c.phone mobile
-        from billdetails d 
-        inner join billmaster m on m.billid = d.billid and m.billid = {Id}
-        inner join productmaster p on p.pluid = d.pluid
-        inner join customers c on c.customerid = m.customerid"
-
-
-        ESSA.OpenConnection()
-        Using adapter As New SqlDataAdapter(SQL, Con)
-            Using table As New DataTable
-                Await Task.Run(Sub() adapter.Fill(table))
-                rptSaleBill.SetDataSource(table)
-                rptSaleBill.SetParameterValue("ShopName", ShopName)
-                rptSaleBill.SetParameterValue("Address", Address)
-                rptSaleBill.SetParameterValue("ContactNo", ContactNo)
-                rptSaleBill.SetParameterValue("GST", GST)
-                'rptSaleBill.SetParameterValue("BillType", type)
-                rptSaleBill.PrintOptions.PrinterName = PrinterName
-                'FrmReportViewer.CrystalReportViewer1.ReportSource = rpt
-                'FrmReportViewer.Visible = False
-                'FrmReportViewer.Show()
-                If type = "Reprint" Then
-                    rptSaleBill.SetParameterValue("BillType", "Duplicate")
-                    If NewRePrintCopies = 1 Then
-                        rptSaleBill.PrintToPrinter(1, False, 0, 0)
-                    ElseIf NewRePrintCopies = 2 Then
-                        rptSaleBill.PrintToPrinter(1, False, 0, 0)
-                        rptSaleBill.PrintToPrinter(1, False, 0, 0)
-                    End If
-                Else
-                    rptSaleBill.SetParameterValue("BillType", "Original")
-                    If NewPrintCopies = 1 Then
-                        rptSaleBill.PrintToPrinter(1, False, 0, 0)
-                    ElseIf NewPrintCopies = 2 Then
-                        rptSaleBill.PrintToPrinter(1, False, 0, 0)
-                        rptSaleBill.SetParameterValue("BillType", "Duplicate")
-                        rptSaleBill.PrintToPrinter(1, False, 0, 0)
-                    End If
+            'Dim rpt As New SaleBill
+            Dim ShopName As String = String.Empty
+            Dim Address As String = String.Empty
+            Dim ContactNo As String = String.Empty
+            Dim GST As String = String.Empty
+            SQL = $"select shopname,address1 + ' ' + address2 + ' ' + city + ' ' +  state address,phone,cst from shops where shopid = {ShopID}"
+            With Await ESSA.OpenReaderAsync(SQL)
+                If Await .ReadAsync Then
+                    ShopName = .Item("shopname").trim
+                    Address = .Item("address").trim
+                    ContactNo = .Item("phone").trim
+                    GST = .Item("cst").trim
                 End If
-                'If type = "Original" Then
-                '    rpt.SetParameterValue("BillType", "Duplicate")
-                '    rpt.PrintToPrinter(Copies, False, 0, 0)
-                'End If
+                .Close()
+            End With
+
+            SQL = $"select a.taxperc,sum(a.taxable) taxable,sum(tax) tax  from
+            (select distinct d.pluid,
+            case when d.rate > t.val 
+            then t.mx 
+            else t.mn end as taxperc,
+            case when d.rate > t.val 
+            then ROUND((100/(100+t.mx)) * d.amount,2) 
+            else ROUND((100/(100+t.mn)) * d.amount,2)  end as taxable,
+            case when d.rate > t.val 
+            then ROUND(((100/(100+t.mx)) * d.amount)* t.mx * 0.01,2) 
+            else ROUND(((100/(100+t.mn)) * d.amount)* t.mn * 0.01,2) end as tax
+            from billdetails d 
+            inner join billmaster m on m.billid = d.billid and m.shopid = {ShopID} and m.billid = {Id}
+            inner join productmaster p on p.pluid = d.pluid
+            inner join producttax t on t.hsn = p.hsncode) a
+            group by a.taxperc"
+            ESSA.OpenConnection()
+            Using adapter As New SqlDataAdapter(SQL, Con)
+                Using table As New DataTable
+                    Await Task.Run(Sub() adapter.Fill(table))
+                    rptSaleBill.Subreports.Item("TaxInfo").SetDataSource(table)
+                End Using
             End Using
-        End Using
-        Con.Close()
+            'Con.Close()
+
+
+            SQL = $"select distinct paymentdesc mode,sum(paid) amt,sum(refund) refund, billid 
+            from billpayments p where shopid = {ShopID} and billid = {Id}
+            group by paymentdesc,billid"
+
+            'ESSA.OpenConnection()
+            Using adapter As New SqlDataAdapter(SQL, Con)
+                Using table As New DataTable
+                    Await Task.Run(Sub() adapter.Fill(table))
+                    rptSaleBill.Subreports.Item("PaymentInfo").SetDataSource(table)
+                End Using
+            End Using
+            'Con.Close()
+
+            SQL = $"select 
+            'T' + convert(varchar,m.termid) + '-' + convert(varchar,m.billno) billno,
+            m.billtime date, 
+            d.sno,p.pluname description,d.qty,d.orate rate,d.disamt disc,d.amount,
+            p.plucode barcode,p.hsncode hsn,
+            c.customername name,c.phone mobile
+            from billdetails d 
+            inner join billmaster m on m.billid = d.billid and m.billid = {Id}
+            inner join productmaster p on p.pluid = d.pluid
+            inner join customers c on c.customerid = m.customerid"
+
+            'ESSA.OpenConnection()
+            Using adapter As New SqlDataAdapter(SQL, Con)
+                Using table As New DataTable
+                    Await Task.Run(Sub() adapter.Fill(table))
+                    rptSaleBill.SetDataSource(table)
+                    rptSaleBill.SetParameterValue("ShopName", ShopName)
+                    rptSaleBill.SetParameterValue("Address", Address)
+                    rptSaleBill.SetParameterValue("ContactNo", ContactNo)
+                    rptSaleBill.SetParameterValue("GST", GST)
+                    'rptSaleBill.SetParameterValue("BillType", type)
+                    rptSaleBill.PrintOptions.PrinterName = PrinterName
+                    'FrmReportViewer.CrystalReportViewer1.ReportSource = rpt
+                    'FrmReportViewer.Visible = False
+                    'FrmReportViewer.Show()
+
+                    'If type = "Original" Then
+                    '    rpt.SetParameterValue("BillType", "Duplicate")
+                    '    rpt.PrintToPrinter(Copies, False, 0, 0)
+                    'End If
+                End Using
+            End Using
+            Dim printThread As New Thread(Sub()
+                                              Try
+                                                  If type = "Reprint" Then
+                                                      rptSaleBill.SetParameterValue("BillType", "Duplicate")
+                                                      If NewRePrintCopies = 1 Then
+                                                          rptSaleBill.PrintToPrinter(1, False, 0, 0)
+                                                      ElseIf NewRePrintCopies = 2 Then
+                                                          rptSaleBill.PrintToPrinter(1, False, 0, 0)
+                                                          rptSaleBill.PrintToPrinter(1, False, 0, 0)
+                                                      End If
+                                                  Else
+                                                      rptSaleBill.SetParameterValue("BillType", "Original")
+                                                      If NewPrintCopies = 1 Then
+                                                          rptSaleBill.PrintToPrinter(1, False, 0, 0)
+                                                      ElseIf NewPrintCopies = 2 Then
+                                                          rptSaleBill.PrintToPrinter(1, False, 0, 0)
+                                                          rptSaleBill.SetParameterValue("BillType", "Duplicate")
+                                                          rptSaleBill.PrintToPrinter(1, False, 0, 0)
+                                                      End If
+                                                  End If
+                                              Catch ex As Exception
+                                                  MsgBox(ex.Message, MsgBoxStyle.Critical)
+                                              End Try
+                                          End Sub)
+            Con.Close()
+
+            printThread.Start()
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical)
+        End Try
 
     End Function
 
@@ -3768,6 +3782,5 @@ Public Class POS
             Return "Failed"
         End Try
     End Function
-
 
 End Class
