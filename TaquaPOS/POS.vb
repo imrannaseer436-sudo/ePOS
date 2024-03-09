@@ -1003,13 +1003,22 @@ Public Class POS
         ' New user method
         '*/
 
-        SQL = "select max(billno) from billmaster where shopid = " & ShopID & " and termid=" & TermID & " and billdt between '" _
-            & Format(SDate, "yyyy-MM-dd") & "' and '" & Format(EDate, "yyyy-MM-dd") & "'"
-        BillNo = Await ESSA.GenerateIDAsync(SQL)
-        lblBillNo.Text = TermID & "/" & BillNo
+        Try
 
-        Dim billCode = Format(SDate, "yy") & Format(EDate, "yy") & Format(ShopID, "00") & Format(TermID, "00") & Format(BillNo, "000000")
-        BillID = CLng(billCode)
+            SQL = "select max(billno) from billmaster where shopid = " & ShopID & " and termid=" & TermID & " and billdt between '" _
+            & Format(SDate, "yyyy-MM-dd") & "' and '" & Format(EDate, "yyyy-MM-dd") & "'"
+            BillNo = Await ESSA.GenerateIDAsync(SQL)
+            lblBillNo.Text = TermID & "/" & BillNo
+
+            Dim billCode = Format(SDate, "yy") & Format(EDate, "yy") & Format(ShopID, "00") & Format(TermID, "00") & Format(BillNo, "000000")
+            BillID = CLng(billCode)
+
+        Catch ex As Exception
+
+            MsgBox(ex.Message, MsgBoxStyle.Critical)
+
+        End Try
+
 
     End Function
 
@@ -1088,98 +1097,105 @@ Public Class POS
 
     Public Async Function SaveBill() As Task
 
-        ESSA.OpenConnection()
-        Dim Cmd = Con.CreateCommand
-        Dim Trn = Con.BeginTransaction(IsolationLevel.Serializable)
-        Cmd.Transaction = Trn
-
         Try
 
-            If Edit = False Then
-
-                nTermID = TermID
-
-                Await GenerateBillNo()
-
-                If HoldID.Count > 0 Then
-                    Dim HoldIdList As String = ""
-                    For Each Item In HoldID
-                        HoldIdList = Item & ","
-                    Next
-                    HoldIdList = Mid(HoldIdList, 1, HoldIdList.Length - 1)
-                    SQL = "delete from billdetailshold where shopid = " & ShopID & " and billid in (" & HoldIdList & ")"
-                    Cmd.CommandText = SQL
-                    Await Cmd.ExecuteNonQueryAsync()
-                End If
-
-            Else
-
-                SQL = "delete from billmaster where shopid = " & ShopID & " and billid=" & BillID & ";" _
-                   & "delete from billdetails where shopid = " & ShopID & " and billid=" & BillID & ";" _
-                   & "delete from billpayments where shopid = " & ShopID & " and billid=" & BillID & ";" _
-                   & "delete from billsalepersons where shopid = " & ShopID & " and billid=" & BillID & ";"
-
-                Cmd.CommandText = SQL
-                Await Cmd.ExecuteNonQueryAsync()
-
+            If TG.Rows.Count = 0 Then
+                TTip.Show("No items to generate to bill..!", btnStore, 0, 25, 2000)
+                Exit Function
             End If
 
-            SQL = "insert into billmaster values (" _
-                & BillID & "," _
-                & BillNo & ",'" _
-                & IIf(ISAdmin, IIf(BillMode = 0 AndAlso Edit = False, Format(Now.Date, "yyyy-MM-dd"), Format(billDt, "yyyy-MM-dd")), Format(Now.Date, "yyyy-MM-dd")) & "','" _
-                & IIf(ISAdmin, IIf(BillMode = 0 AndAlso Edit = False, Format(Now, "yyyy-MM-dd HH:mm:ss"), Format(billTime, "yyyy-MM-dd HH:mm:ss")), Format(Now, "yyyy-MM-dd HH:mm:ss")) & "'," _
-                & nTermID & "," _
-                & Val(lblQty.Text) & "," _
-                & Val(lblNetAmt.Text) & "," _
-                & Val(lblDisPerc.Text) & "," _
-                & Val(lblDisAmt.Text) & "," _
-                & customerId & ",'" _
-                & eRefNo & "','" _
-                & Remark & "'," _
-                & ShopID & "," _
-                & UserID & ",0,1)"
+            ESSA.OpenConnection()
+            Dim Cmd = Con.CreateCommand
+            Dim Trn = Con.BeginTransaction(IsolationLevel.Serializable)
+            Cmd.Transaction = Trn
 
-            Cmd.CommandText = SQL
-            Await Cmd.ExecuteNonQueryAsync()
+            Try
 
-            For i As Short = 0 To TG.Rows.Count - 1
+                If Edit = False Then
 
-                SQL = "insert into billdetails values (" _
-                    & BillID & ",'" _
-                    & IIf(ISAdmin, IIf(BillMode = 0 And Edit = False, Format(Now.Date, "yyyy-MM-dd"), Format(billDt, "yyyy-MM-dd")), Format(Now.Date, "yyyy-MM-dd")) & "'," _
-                    & Val(TG.Item(0, i).Value) & "," _
-                    & Val(TG.Item(5, i).Value) & ",0," _
-                    & Val(TG.Item(11, i).Value) & "," _
-                    & Val(TG.Item(9, i).Value) & "," _
-                    & Val(TG.Item(7, i).Value) & "," _
-                    & Val(TG.Item(8, i).Value) & "," _
-                    & Val(TG.Item(6, i).Value) & "," _
-                    & Val(TG.Item(12, i).Value) & "," _
-                    & BillMode & "," _
-                    & nTermID & "," _
-                    & ShopID & "," _
-                    & i + 1 & ",0,1);"
+                    nTermID = TermID
 
-                Cmd.CommandText = SQL
-                Await Cmd.ExecuteNonQueryAsync()
+                    Await GenerateBillNo()
 
-                SQL = "INSERT INTO BillSalePersons VALUES(" _
+                    If HoldID.Count > 0 Then
+                        Dim HoldIdList As String = ""
+                        For Each Item In HoldID
+                            HoldIdList = Item & ","
+                        Next
+                        HoldIdList = Mid(HoldIdList, 1, HoldIdList.Length - 1)
+                        SQL = "delete from billdetailshold where shopid = " & ShopID & " and billid in (" & HoldIdList & ")"
+                        Cmd.CommandText = SQL
+                        Await Cmd.ExecuteNonQueryAsync()
+                    End If
+
+                Else
+
+                    SQL = "delete from billmaster where shopid = " & ShopID & " and billid=" & BillID & ";" _
+                       & "delete from billdetails where shopid = " & ShopID & " and billid=" & BillID & ";" _
+                       & "delete from billpayments where shopid = " & ShopID & " and billid=" & BillID & ";" _
+                       & "delete from billsalepersons where shopid = " & ShopID & " and billid=" & BillID & ";"
+
+                    Cmd.CommandText = SQL
+                    Await Cmd.ExecuteNonQueryAsync()
+
+                End If
+
+                SQL = "insert into billmaster values (" _
                     & BillID & "," _
-                    & Val(TG.Item(16, i).Value) & "," _
-                    & Val(TG.Item(0, i).Value) & ", " _
-                    & ShopID & ")"
+                    & BillNo & ",'" _
+                    & IIf(ISAdmin, IIf(BillMode = 0 AndAlso Edit = False, Format(Now.Date, "yyyy-MM-dd"), Format(billDt, "yyyy-MM-dd")), Format(Now.Date, "yyyy-MM-dd")) & "','" _
+                    & IIf(ISAdmin, IIf(BillMode = 0 AndAlso Edit = False, Format(Now, "yyyy-MM-dd HH:mm:ss"), Format(billTime, "yyyy-MM-dd HH:mm:ss")), Format(Now, "yyyy-MM-dd HH:mm:ss")) & "'," _
+                    & nTermID & "," _
+                    & Val(lblQty.Text) & "," _
+                    & Val(lblNetAmt.Text) & "," _
+                    & Val(lblDisPerc.Text) & "," _
+                    & Val(lblDisAmt.Text) & "," _
+                    & customerId & ",'" _
+                    & eRefNo & "','" _
+                    & Remark & "'," _
+                    & ShopID & "," _
+                    & UserID & ",0,1)"
 
                 Cmd.CommandText = SQL
                 Await Cmd.ExecuteNonQueryAsync()
 
-            Next
+                For i As Short = 0 To TG.Rows.Count - 1
 
-            If NewPaymentMode And ISReturn = False Then
+                    SQL = "insert into billdetails values (" _
+                        & BillID & ",'" _
+                        & IIf(ISAdmin, IIf(BillMode = 0 And Edit = False, Format(Now.Date, "yyyy-MM-dd"), Format(billDt, "yyyy-MM-dd")), Format(Now.Date, "yyyy-MM-dd")) & "'," _
+                        & Val(TG.Item(0, i).Value) & "," _
+                        & Val(TG.Item(5, i).Value) & ",0," _
+                        & Val(TG.Item(11, i).Value) & "," _
+                        & Val(TG.Item(9, i).Value) & "," _
+                        & Val(TG.Item(7, i).Value) & "," _
+                        & Val(TG.Item(8, i).Value) & "," _
+                        & Val(TG.Item(6, i).Value) & "," _
+                        & Val(TG.Item(12, i).Value) & "," _
+                        & BillMode & "," _
+                        & nTermID & "," _
+                        & ShopID & "," _
+                        & i + 1 & ",0,1);"
 
-                If Val(TxtCashNew.Text) > 0 Then
+                    Cmd.CommandText = SQL
+                    Await Cmd.ExecuteNonQueryAsync()
 
-                    SQL = $"insert into billpayments values(
+                    SQL = "INSERT INTO BillSalePersons VALUES(" _
+                        & BillID & "," _
+                        & Val(TG.Item(16, i).Value) & "," _
+                        & Val(TG.Item(0, i).Value) & ", " _
+                        & ShopID & ")"
+
+                    Cmd.CommandText = SQL
+                    Await Cmd.ExecuteNonQueryAsync()
+
+                Next
+
+                If NewPaymentMode And ISReturn = False Then
+
+                    If Val(TxtCashNew.Text) > 0 Then
+
+                        SQL = $"insert into billpayments values(
                     {BillID},
                     {ShopID},
                     1,
@@ -1194,15 +1210,14 @@ Public Class POS
                     0,
                     1)"
 
-                    Cmd.CommandText = SQL
-                    Await Cmd.ExecuteNonQueryAsync()
+                        Cmd.CommandText = SQL
+                        Await Cmd.ExecuteNonQueryAsync()
 
-                End If
+                    End If
 
+                    If Val(TxtCardNew.Text) > 0 Then
 
-                If Val(TxtCardNew.Text) > 0 Then
-
-                    SQL = $"insert into billpayments values(
+                        SQL = $"insert into billpayments values(
                     {BillID},
                     {ShopID},
                     2,
@@ -1217,15 +1232,14 @@ Public Class POS
                     0,
                     1)"
 
-                    Cmd.CommandText = SQL
-                    Await Cmd.ExecuteNonQueryAsync()
+                        Cmd.CommandText = SQL
+                        Await Cmd.ExecuteNonQueryAsync()
 
-                End If
+                    End If
 
+                    If Val(TxtUpiNew.Text) > 0 Then
 
-                If Val(TxtUpiNew.Text) > 0 Then
-
-                    SQL = $"insert into billpayments values(
+                        SQL = $"insert into billpayments values(
                     {BillID},
                     {ShopID},
                     3,
@@ -1240,78 +1254,86 @@ Public Class POS
                     0,
                     1)"
 
-                    Cmd.CommandText = SQL
-                    Await Cmd.ExecuteNonQueryAsync()
+                        Cmd.CommandText = SQL
+                        Await Cmd.ExecuteNonQueryAsync()
+
+                    End If
+
+                Else
+
+                    For j As SByte = 0 To TGPmt.Rows.Count - 1
+
+                        SQL = "insert into billpayments values (" _
+                        & BillID & "," _
+                        & ShopID & "," _
+                        & Val(TGPmt.Item(0, j).Value) & ",'" _
+                        & TGPmt.Item(1, j).Value & "'," _
+                        & Val(TGPmt.Item(4, j).Value) & "," _
+                        & Val(TGPmt.Item(5, j).Value) & ",'" _
+                        & TGPmt.Item(2, j).Value & "','" _
+                        & Format(CDate(TGPmt.Item(3, j).Value), "yyyy-MM-dd") & "'," _
+                        & j + 1 & "," _
+                        & nTermID & ",'" _
+                        & IIf(ISAdmin, IIf(BillMode = 0 And Edit = False, Format(Now.Date, "yyyy-MM-dd"), Format(billDt, "yyyy-MM-dd")), Format(Now.Date, "yyyy-MM-dd")) & "',0,1)"
+
+                        Cmd.CommandText = SQL
+                        Await Cmd.ExecuteNonQueryAsync()
+
+                    Next
 
                 End If
 
-            Else
+                Trn.Commit()
+                'Trn = Nothing
+                'IsBillSaved = True
+                Con.Close()
 
-                For j As SByte = 0 To TGPmt.Rows.Count - 1
+                'If chkEP.Checked = True Then
+                '    PrintBill(BillID, BillType)
+                'End If
 
-                    SQL = "insert into billpayments values (" _
-                    & BillID & "," _
-                    & ShopID & "," _
-                    & Val(TGPmt.Item(0, j).Value) & ",'" _
-                    & TGPmt.Item(1, j).Value & "'," _
-                    & Val(TGPmt.Item(4, j).Value) & "," _
-                    & Val(TGPmt.Item(5, j).Value) & ",'" _
-                    & TGPmt.Item(2, j).Value & "','" _
-                    & Format(CDate(TGPmt.Item(3, j).Value), "yyyy-MM-dd") & "'," _
-                    & j + 1 & "," _
-                    & nTermID & ",'" _
-                    & IIf(ISAdmin, IIf(BillMode = 0 And Edit = False, Format(Now.Date, "yyyy-MM-dd"), Format(billDt, "yyyy-MM-dd")), Format(Now.Date, "yyyy-MM-dd")) & "',0,1)"
+                'Catch ex As Exception
 
-                    Cmd.CommandText = SQL
-                    Await Cmd.ExecuteNonQueryAsync()
+                '    Trn.Rollback()
+                '    Con.Close()
+                '    MsgBox(ex.Message, MsgBoxStyle.Critical)
+                '    Exit Sub
 
-                Next
+                'End Try
 
+            Catch ex As SqlException
+                Trn.Rollback()
+                MsgBox(ex.Message, MsgBoxStyle.Critical)
+                Exit Function
+            Catch ex1 As Exception
+                Trn.Rollback()
+                MsgBox(ex1.Message, MsgBoxStyle.Critical)
+                Exit Function
+            Finally
+                Trn?.Dispose()
+                If Con IsNot Nothing AndAlso Con.State = ConnectionState.Open Then
+                    Con.Close()
+                End If
+            End Try
+
+            If chkEP.Checked = True Then
+                'PrintBill(BillID, BillType)
+                Await PrintBillUsingCrystalReport(BillID, "Original")
             End If
 
-
-            Trn.Commit()
-            Trn = Nothing
-            'IsBillSaved = True
-            Con.Close()
-
-            'If chkEP.Checked = True Then
-            '    PrintBill(BillID, BillType)
-            'End If
-
-            'Catch ex As Exception
-
-            '    Trn.Rollback()
-            '    Con.Close()
-            '    MsgBox(ex.Message, MsgBoxStyle.Critical)
-            '    Exit Sub
-
-            'End Try
-
-        Catch ex As SqlException
-            Trn.Rollback()
-            Con.Close()
-            MsgBox(ex.Message, MsgBoxStyle.Critical)
-            Exit Function
-        Catch ex1 As Exception
-            MsgBox(ex1.Message, MsgBoxStyle.Critical)
-            Exit Function
-        End Try
-
-        If chkEP.Checked = True Then
-            'PrintBill(BillID, BillType)
-            Await PrintBillUsingCrystalReport(BillID, "Original")
-        End If
-
-        If Not MobileNo.Trim = String.Empty Then
-            If Not MsgBox("Send Sms..?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.No Then
+            If Not MobileNo.Trim = String.Empty AndAlso MobileNo.Length = 10 Then
                 Await SendSmsAsync(MobileNo, ShopNm, Format(Now.Date, "dd-MM-yyyy"), shopNumber)
                 MobileNo = ""
-                'Await SendSmsAsync(MobileNo, ShopNm, Format(Now.Date, "dd-MM-yyyy"))
+                'If Not MsgBox("Send Sms..?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.No Then
+                '    'Await SendSmsAsync(MobileNo, ShopNm, Format(Now.Date, "dd-MM-yyyy"))
+                'End If
             End If
-        End If
 
-        Await RefreshBill()
+            Await RefreshBill()
+
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical)
+        End Try
 
     End Function
 
@@ -1523,60 +1545,65 @@ Public Class POS
 
     Private Async Function RefreshBill() As Task
 
-        If lblHead.Text = "  ePOS - Discount Mode" Then
-            GetTheme(2)
-            LoadTheme()
-            DiscountLimit = iDiscountLimit
-            lblHead.Text = "  ePOS"
-        End If
+        Try
+            TG.Rows.Clear()
 
-        cmbPmtType.SelectedIndex = 0
-        BillMode = 0
-        Remark = ""
-        eRefNo = ""
-        BillType = "ORIGINAL"
-        nTermID = TermID
-        ISReturn = False
-        Edit = False
-        pnlAlter.Visible = False
-        pnlPayment.Visible = False
-        PnlCustomerInfo.Visible = False
-        PnlPaymentNew.Visible = False
-        IsBillSaved = False
-        IsPresent = False
-        customerId = 1
-        Await UpdateCustomerComboBox()
-        cmbCustomer.SelectedValue = 1
-        Await GenerateBillNo()
-        Await LoadSalesPersons()
-        Await UpdateShopSettings()
-        billDt = Format(Now.Date, "yyyy-MM-dd")
-        billTime = Format(Now, "yyyy-MM-dd HH:mm:ss")
-        MobileNo = ""
-        message = ""
+            If lblHead.Text = "  ePOS - Discount Mode" Then
+                GetTheme(2)
+                LoadTheme()
+                DiscountLimit = iDiscountLimit
+                lblHead.Text = "  ePOS"
+            End If
 
-        HoldID.Clear()
-        TGPmt.Rows.Clear()
-        txtRefNo.Clear()
-        txtAmt.Clear()
-        TxtCustMobile.Clear()
-        TxtCustName.Clear()
-        TxtCashNew.Clear()
-        TxtCardNew.Clear()
-        TxtUpiNew.Clear()
+            cmbPmtType.SelectedIndex = 0
+            BillMode = 0
+            Remark = ""
+            eRefNo = ""
+            BillType = "ORIGINAL"
+            nTermID = TermID
+            ISReturn = False
+            Edit = False
+            pnlAlter.Visible = False
+            pnlPayment.Visible = False
+            PnlCustomerInfo.Visible = False
+            PnlPaymentNew.Visible = False
+            IsBillSaved = False
+            IsPresent = False
+            customerId = 1
+            cmbCustomer.SelectedValue = 1
+            billDt = Format(Now.Date, "yyyy-MM-dd")
+            billTime = Format(Now, "yyyy-MM-dd HH:mm:ss")
+            MobileNo = ""
+            message = ""
 
-        lblCode.Text = "Product Code"
-        lblQty.Text = "0"
-        lblNetAmt.Text = "0.00"
-        lblTotAmt.Text = "0.00"
-        lblDisAmt.Text = "0.00"
-        lblRndOff.Text = "0.00"
-        lblBillAmt.Text = "0.00"
-        LblReturnInCash.Text = "0.00"
-        TG.Rows.Clear()
-        txtSP.Clear()
-        ResetField()
-        txtCode.Focus()
+            HoldID.Clear()
+            TGPmt.Rows.Clear()
+            txtRefNo.Clear()
+            txtAmt.Clear()
+            TxtCustMobile.Clear()
+            TxtCustName.Clear()
+            TxtCashNew.Clear()
+            TxtCardNew.Clear()
+            TxtUpiNew.Clear()
+
+            lblCode.Text = "Product Code"
+            lblQty.Text = "0"
+            lblNetAmt.Text = "0.00"
+            lblTotAmt.Text = "0.00"
+            lblDisAmt.Text = "0.00"
+            lblRndOff.Text = "0.00"
+            lblBillAmt.Text = "0.00"
+            LblReturnInCash.Text = "0.00"
+            txtSP.Clear()
+            ResetField()
+            txtCode.Focus()
+            Await UpdateCustomerComboBox()
+            Await GenerateBillNo()
+            Await LoadSalesPersons()
+            Await UpdateShopSettings()
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical)
+        End Try
 
     End Function
 
@@ -3571,21 +3598,29 @@ Public Class POS
 
     Private Async Sub BtnSaveNew_Click(sender As Object, e As EventArgs) Handles BtnSaveNew.Click
 
-        If CalculateTotalNew() < Val(lblBillAmt.Text) Then
-            TTip.Show("Bill value is higher .!", TxtCashNew, 0, 25, 2000)
-            Exit Sub
-        ElseIf CalculateUpiAndCard() > Val(lblBillAmt.Text) Then
-            TTip.Show("Card value should not be higher than required amount..!", TxtCardNew, 0, 25, 2000)
-            Exit Sub
-        ElseIf CalculateUpiAndCard() > Val(lblBillAmt.Text) Then
-            TTip.Show("UPI value should not be higher than required amount..!", TxtUpiNew, 0, 25, 2000)
-            Exit Sub
-        End If
+        Try
 
-        PnlLoading.Visible = True
-        PnlLoading.BringToFront()
-        Await SaveBill()
-        PnlLoading.Visible = False
+            If CalculateTotalNew() < Val(lblBillAmt.Text) Then
+                TTip.Show("Bill value is higher .!", TxtCashNew, 0, 25, 2000)
+                Exit Sub
+            ElseIf CalculateUpiAndCard() > Val(lblBillAmt.Text) Then
+                TTip.Show("Card value should not be higher than required amount..!", TxtCardNew, 0, 25, 2000)
+                Exit Sub
+            ElseIf CalculateUpiAndCard() > Val(lblBillAmt.Text) Then
+                TTip.Show("UPI value should not be higher than required amount..!", TxtUpiNew, 0, 25, 2000)
+                Exit Sub
+            End If
+
+            PnlLoading.Visible = True
+            PnlLoading.BringToFront()
+            Await SaveBill()
+            PnlLoading.Visible = False
+
+        Catch ex As Exception
+
+            MsgBox(ex.Message, MsgBoxStyle.Critical)
+
+        End Try
 
     End Sub
 
@@ -3699,13 +3734,14 @@ Public Class POS
 
     Private Async Function SendSmsAsync(CustMobileNo As String, ShopName As String, Billdate As String, ShopNumber As String) As Task(Of String)
 
-        Dim httpClient As New HttpClient()
-
-        message = Replace(messageTemplate, "@shop", ShopName)
-        message = Replace(message, "@date", Billdate)
-        message = Replace(message, "@mobile", ShopNumber)
-
         Try
+
+            Dim httpClient As New HttpClient()
+
+            message = Replace(messageTemplate, "@shop", ShopName)
+            message = Replace(message, "@date", Billdate)
+            message = Replace(message, "@mobile", ShopNumber)
+
             Dim url As String = SmsApiUrl.Replace("@PhNo", CustMobileNo)
             Dim finalURL As String = url.Replace("@Text", message)
 

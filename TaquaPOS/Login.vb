@@ -130,7 +130,19 @@ Public Class Login
 
     End Sub
 
-    Private Sub btnSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSettings.Click
+    Private Async Sub btnSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSettings.Click
+
+        SQL = "select password from users where isadmin = 1"
+        With Await ESSA.OpenReaderAsync(SQL)
+            While Await .ReadAsync
+                If txtPassword.Text <> ClsEncodeDecode.DCode(.Item(0)) Then
+                    TTip.Show("please enter admin password..!", txtPassword, 0, 25, 2000)
+                    txtPassword.Focus()
+                    Exit Sub
+                End If
+            End While
+            .Close()
+        End With
 
         POSSettings.Show()
         Me.Close()
