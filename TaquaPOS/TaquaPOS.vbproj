@@ -218,6 +218,12 @@
     <Compile Include="PrinterTesting.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="StockSearch.Designer.vb">
+      <DependentUpon>StockSearch.vb</DependentUpon>
+    </Compile>
+    <Compile Include="StockSearch.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ProductSearch.Designer.vb">
       <DependentUpon>ProductSearch.vb</DependentUpon>
     </Compile>
@@ -312,6 +318,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PrinterTesting.resx">
       <DependentUpon>PrinterTesting.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StockSearch.resx">
+      <DependentUpon>StockSearch.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProductSearch.resx">
       <DependentUpon>ProductSearch.vb</DependentUpon>

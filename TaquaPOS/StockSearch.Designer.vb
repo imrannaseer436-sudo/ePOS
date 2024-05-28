@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class ProductSearch
+Partial Class StockSearch
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
@@ -28,6 +28,7 @@ Partial Class ProductSearch
         Me.btnClose = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.chkName = New System.Windows.Forms.CheckBox()
         Me.btnGo = New System.Windows.Forms.Button()
         Me.TG = New System.Windows.Forms.DataGridView()
         Me.SimpleLine2 = New simpleline.assemblies.simpleLine()
@@ -36,15 +37,12 @@ Partial Class ProductSearch
         Me.txtCode = New System.Windows.Forms.TextBox()
         Me.Label6 = New System.Windows.Forms.Label()
         Me.Label5 = New System.Windows.Forms.Label()
-        Me.mebBegin = New System.Windows.Forms.DateTimePicker()
-        Me.mebEnd = New System.Windows.Forms.DateTimePicker()
-        Me.Label4 = New System.Windows.Forms.Label()
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.chkHold = New System.Windows.Forms.CheckBox()
+        Me.PnlLoading = New System.Windows.Forms.Panel()
+        Me.Label81 = New System.Windows.Forms.Label()
         Me.pnlBack.SuspendLayout()
         Me.Panel1.SuspendLayout()
         CType(Me.TG, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.PnlLoading.SuspendLayout()
         Me.SuspendLayout()
         '
         'pnlBack
@@ -92,15 +90,16 @@ Partial Class ProductSearch
         Me.Label1.ForeColor = System.Drawing.Color.White
         Me.Label1.Location = New System.Drawing.Point(4, 4)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(90, 21)
+        Me.Label1.Size = New System.Drawing.Size(107, 21)
         Me.Label1.TabIndex = 0
-        Me.Label1.Text = "Bill Search"
+        Me.Label1.Text = "Stock Search"
         '
         'Panel1
         '
         Me.Panel1.BackColor = System.Drawing.Color.White
         Me.pnlBack.SetColumnSpan(Me.Panel1, 2)
-        Me.Panel1.Controls.Add(Me.chkHold)
+        Me.Panel1.Controls.Add(Me.PnlLoading)
+        Me.Panel1.Controls.Add(Me.chkName)
         Me.Panel1.Controls.Add(Me.btnGo)
         Me.Panel1.Controls.Add(Me.TG)
         Me.Panel1.Controls.Add(Me.SimpleLine2)
@@ -109,16 +108,22 @@ Partial Class ProductSearch
         Me.Panel1.Controls.Add(Me.txtCode)
         Me.Panel1.Controls.Add(Me.Label6)
         Me.Panel1.Controls.Add(Me.Label5)
-        Me.Panel1.Controls.Add(Me.mebBegin)
-        Me.Panel1.Controls.Add(Me.mebEnd)
-        Me.Panel1.Controls.Add(Me.Label4)
-        Me.Panel1.Controls.Add(Me.Label3)
-        Me.Panel1.Controls.Add(Me.Label2)
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Panel1.Location = New System.Drawing.Point(4, 33)
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(339, 464)
         Me.Panel1.TabIndex = 0
+        '
+        'chkName
+        '
+        Me.chkName.AutoSize = True
+        Me.chkName.Font = New System.Drawing.Font("Segoe UI Semibold", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkName.Location = New System.Drawing.Point(283, 10)
+        Me.chkName.Name = "chkName"
+        Me.chkName.Size = New System.Drawing.Size(56, 17)
+        Me.chkName.TabIndex = 8
+        Me.chkName.Text = "Name"
+        Me.chkName.UseVisualStyleBackColor = True
         '
         'btnGo
         '
@@ -126,7 +131,7 @@ Partial Class ProductSearch
         Me.btnGo.FlatAppearance.BorderSize = 0
         Me.btnGo.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.btnGo.ForeColor = System.Drawing.Color.White
-        Me.btnGo.Location = New System.Drawing.Point(295, 68)
+        Me.btnGo.Location = New System.Drawing.Point(134, 58)
         Me.btnGo.Name = "btnGo"
         Me.btnGo.Size = New System.Drawing.Size(33, 23)
         Me.btnGo.TabIndex = 3
@@ -163,7 +168,7 @@ Partial Class ProductSearch
         Me.TG.DefaultCellStyle = DataGridViewCellStyle2
         Me.TG.EnableHeadersVisualStyles = False
         Me.TG.GridColor = System.Drawing.Color.WhiteSmoke
-        Me.TG.Location = New System.Drawing.Point(11, 142)
+        Me.TG.Location = New System.Drawing.Point(11, 119)
         Me.TG.Name = "TG"
         Me.TG.ReadOnly = True
         Me.TG.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None
@@ -171,7 +176,7 @@ Partial Class ProductSearch
         Me.TG.RowTemplate.Height = 25
         Me.TG.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.TG.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.TG.Size = New System.Drawing.Size(317, 317)
+        Me.TG.Size = New System.Drawing.Size(317, 340)
         Me.TG.TabIndex = 4
         '
         'SimpleLine2
@@ -183,7 +188,7 @@ Partial Class ProductSearch
         Me.SimpleLine2.GradientAngle = simpleline.assemblies.GradientDirection.Horizontal
         Me.SimpleLine2.LineColor = System.Drawing.Color.WhiteSmoke
         Me.SimpleLine2.LineWidth = 1
-        Me.SimpleLine2.Location = New System.Drawing.Point(4, 135)
+        Me.SimpleLine2.Location = New System.Drawing.Point(4, 112)
         Me.SimpleLine2.Name = "SimpleLine2"
         Me.SimpleLine2.Size = New System.Drawing.Size(330, 1)
         Me.SimpleLine2.Style = simpleline.assemblies.LineStyle.Horizontal
@@ -210,7 +215,7 @@ Partial Class ProductSearch
         '
         Me.Label7.AutoSize = True
         Me.Label7.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(8, 116)
+        Me.Label7.Location = New System.Drawing.Point(10, 93)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(97, 15)
         Me.Label7.TabIndex = 5
@@ -220,7 +225,7 @@ Partial Class ProductSearch
         '
         Me.txtCode.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.txtCode.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.txtCode.Location = New System.Drawing.Point(177, 68)
+        Me.txtCode.Location = New System.Drawing.Point(11, 58)
         Me.txtCode.Name = "txtCode"
         Me.txtCode.Size = New System.Drawing.Size(117, 23)
         Me.txtCode.TabIndex = 2
@@ -228,7 +233,7 @@ Partial Class ProductSearch
         'Label6
         '
         Me.Label6.AutoSize = True
-        Me.Label6.Location = New System.Drawing.Point(174, 43)
+        Me.Label6.Location = New System.Drawing.Point(8, 33)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(80, 15)
         Me.Label6.TabIndex = 3
@@ -238,68 +243,35 @@ Partial Class ProductSearch
         '
         Me.Label5.AutoSize = True
         Me.Label5.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label5.Location = New System.Drawing.Point(174, 10)
+        Me.Label5.Location = New System.Drawing.Point(8, 10)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(102, 15)
         Me.Label5.TabIndex = 2
         Me.Label5.Text = "PRODUCT FILTER"
         '
-        'mebBegin
+        'PnlLoading
         '
-        Me.mebBegin.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
-        Me.mebBegin.Location = New System.Drawing.Point(66, 39)
-        Me.mebBegin.Name = "mebBegin"
-        Me.mebBegin.Size = New System.Drawing.Size(83, 23)
-        Me.mebBegin.TabIndex = 0
+        Me.PnlLoading.BackColor = System.Drawing.Color.FromArgb(CType(CType(112, Byte), Integer), CType(CType(173, Byte), Integer), CType(CType(71, Byte), Integer))
+        Me.PnlLoading.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.PnlLoading.Controls.Add(Me.Label81)
+        Me.PnlLoading.Location = New System.Drawing.Point(69, 195)
+        Me.PnlLoading.Name = "PnlLoading"
+        Me.PnlLoading.Size = New System.Drawing.Size(200, 74)
+        Me.PnlLoading.TabIndex = 14
+        Me.PnlLoading.Visible = False
         '
-        'mebEnd
+        'Label81
         '
-        Me.mebEnd.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
-        Me.mebEnd.Location = New System.Drawing.Point(66, 68)
-        Me.mebEnd.Name = "mebEnd"
-        Me.mebEnd.Size = New System.Drawing.Size(83, 23)
-        Me.mebEnd.TabIndex = 1
+        Me.Label81.AutoSize = True
+        Me.Label81.Font = New System.Drawing.Font("Segoe UI Semibold", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label81.ForeColor = System.Drawing.Color.White
+        Me.Label81.Location = New System.Drawing.Point(39, 26)
+        Me.Label81.Name = "Label81"
+        Me.Label81.Size = New System.Drawing.Size(121, 21)
+        Me.Label81.TabIndex = 0
+        Me.Label81.Text = "Loading, Wait..."
         '
-        'Label4
-        '
-        Me.Label4.AutoSize = True
-        Me.Label4.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(8, 10)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(69, 15)
-        Me.Label4.TabIndex = 0
-        Me.Label4.Text = "DURATION"
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(8, 72)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(27, 15)
-        Me.Label3.TabIndex = 0
-        Me.Label3.Text = "End"
-        '
-        'Label2
-        '
-        Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(8, 43)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(37, 15)
-        Me.Label2.TabIndex = 0
-        Me.Label2.Text = "Begin"
-        '
-        'chkHold
-        '
-        Me.chkHold.AutoSize = True
-        Me.chkHold.Font = New System.Drawing.Font("Segoe UI Semibold", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkHold.Location = New System.Drawing.Point(283, 10)
-        Me.chkHold.Name = "chkHold"
-        Me.chkHold.Size = New System.Drawing.Size(51, 17)
-        Me.chkHold.TabIndex = 8
-        Me.chkHold.Text = "Hold"
-        Me.chkHold.UseVisualStyleBackColor = True
-        '
-        'ProductSearch
+        'StockSearch
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
@@ -307,7 +279,7 @@ Partial Class ProductSearch
         Me.Controls.Add(Me.pnlBack)
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
-        Me.Name = "ProductSearch"
+        Me.Name = "StockSearch"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "ProductSearch"
         Me.pnlBack.ResumeLayout(False)
@@ -315,6 +287,8 @@ Partial Class ProductSearch
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
         CType(Me.TG, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.PnlLoading.ResumeLayout(False)
+        Me.PnlLoading.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -327,13 +301,10 @@ Partial Class ProductSearch
     Friend WithEvents txtCode As System.Windows.Forms.TextBox
     Friend WithEvents Label6 As System.Windows.Forms.Label
     Friend WithEvents Label5 As System.Windows.Forms.Label
-    Friend WithEvents mebBegin As System.Windows.Forms.DateTimePicker
-    Friend WithEvents mebEnd As System.Windows.Forms.DateTimePicker
-    Friend WithEvents Label4 As System.Windows.Forms.Label
-    Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents TG As System.Windows.Forms.DataGridView
     Friend WithEvents btnGo As System.Windows.Forms.Button
     Friend WithEvents btnClose As System.Windows.Forms.Button
-    Friend WithEvents chkHold As CheckBox
+    Friend WithEvents chkName As CheckBox
+    Friend WithEvents PnlLoading As Panel
+    Friend WithEvents Label81 As Label
 End Class

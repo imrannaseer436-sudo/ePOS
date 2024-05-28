@@ -658,7 +658,7 @@ Partial Class POS
         Me.btnDenom.Name = "btnDenom"
         Me.btnDenom.Size = New System.Drawing.Size(91, 29)
         Me.btnDenom.TabIndex = 13
-        Me.btnDenom.Text = "Denominate"
+        Me.btnDenom.Text = "Stock"
         Me.btnDenom.UseVisualStyleBackColor = False
         '
         'btnRemarks

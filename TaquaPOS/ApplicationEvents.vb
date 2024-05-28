@@ -9,7 +9,7 @@
     ' NetworkAvailabilityChanged: Raised when the network connection is connected or disconnected.
     Partial Friend Class MyApplication
 
-        Public AppVersion As Short = 1118
+        Public AppVersion As Short = 1119
 
         Private Sub LoadVersionPath()
 

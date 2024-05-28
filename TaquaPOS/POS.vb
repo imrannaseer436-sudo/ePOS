@@ -2538,8 +2538,9 @@ Public Class POS
 
     Private Sub btnDenom_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDenom.Click
 
-        Denominate.ShowDialog(Me)
-        txtPAmt.Focus()
+        'Denominate.ShowDialog(Me)
+        'txtPAmt.Focus()
+        StockSearch.Show(Me)
 
     End Sub
 
@@ -3608,12 +3609,12 @@ Public Class POS
                 TTip.Show("UPI value should not be higher than required amount..!", TxtUpiNew, 0, 25, 2000)
                 Exit Sub
             End If
-
+            BtnSaveNew.Enabled = False
             PnlLoading.Visible = True
             PnlLoading.BringToFront()
             Await SaveBill()
             PnlLoading.Visible = False
-
+            BtnSaveNew.Enabled = True
         Catch ex As Exception
 
             MsgBox(ex.Message, MsgBoxStyle.Critical)
@@ -3842,6 +3843,9 @@ Public Class POS
         End Try
     End Function
 
+    Private Sub btnHelp_Click(sender As Object, e As EventArgs) Handles btnHelp.Click
 
+        'StockSearch.Show(Me)
 
+    End Sub
 End Class
