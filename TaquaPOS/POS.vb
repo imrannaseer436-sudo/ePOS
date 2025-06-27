@@ -4,14 +4,14 @@ Imports System.Threading.Tasks
 Imports System.Net.Http
 Imports System.Net
 Imports System.IO
-Imports System.Threading
+
 
 Public Class POS
 
     Private BillNo As Long = 0
     Private BillID As Long = 0
     Private HoldID As New List(Of Short)
-    Private nTermID As SByte = 0
+    Private nTermID As Byte = 0
     Private Edit As Boolean = False
     Private POSPrinter As New iPOSPrinterNew
     Private POSPrinterRT As New iPOSPrinterRichText
@@ -394,6 +394,12 @@ Public Class POS
 
     Private Async Sub POS_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
 
+        PnlLoading.Visible = True
+        PnlLoading.BringToFront()
+        PnlLoading.Refresh()
+
+        LoadTheme()
+
         TempFilePath = Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine) & "\"
 
         If System.IO.File.Exists(TempFilePath & "PrintFile.bat") = False Then
@@ -401,8 +407,8 @@ Public Class POS
         End If
 
         SQL = "select shopid,shopname,phone from shops where shopcode='" & ShopCd & "'"
-        With ESSA.OpenReader(SQL)
-            If .Read Then
+        With Await ESSA.OpenReaderAsync(SQL)
+            If Await .ReadAsync Then
                 ShopID = .Item(0)
                 ShopNm = .GetString(1).Trim
                 shopNumber = .GetString(2).Trim
@@ -414,7 +420,7 @@ Public Class POS
 
         Await UpdateShopSettings()
 
-        GetShopAddress()
+        Await GetShopAddress()
 
         lblUser.Text = "Welcome," & UserNm
         lblVer.Text = "Version 1.0 Build " & My.Application.AppVersion
@@ -441,19 +447,24 @@ Public Class POS
 
 
 
-        LoadHoldBills()
+        Await LoadHoldBills()
 
         SQL = "select convert(varchar,termid) termid from terminal where shopid=" & ShopID & " order by termid"
-        ESSA.LoadCombo(cmbATerm, SQL, "termid", "", "All")
+        Await ESSA.LoadComboAsync(cmbATerm, SQL, "termid", "", "All")
 
         SQL = "select termid from terminal where shopid=" & ShopID & " order by termid"
-        ESSA.LoadCombo(cmbTerm, SQL, "termid")
+        Await ESSA.LoadComboAsync(cmbTerm, SQL, "termid")
 
-        SQL = "SELECT CUSTOMERID,CUSTOMERNAME FROM CUSTOMERS ORDER BY CUSTOMERID"
-        ESSA.LoadCombo(cmbCustomer, SQL, "CUSTOMERNAME", "CUSTOMERID")
+        SQL = $"SELECT 1 AS CUSTOMERID, 'Default' AS CUSTOMERNAME
+                UNION ALL 
+                SELECT CUSTOMERID,CUSTOMERNAME 
+                FROM CUSTOMERS 
+                WHERE LOCATIONID = {ShopID} 
+                ORDER BY CUSTOMERID"
+        Await ESSA.LoadComboAsync(cmbCustomer, SQL, "CUSTOMERNAME", "CUSTOMERID")
 
         SQL = "SELECT PAYMENTID,PAYMENTDESC FROM PAYMENTTYPE ORDER BY PAYMENTID"
-        ESSA.LoadCombo(cmbPmtType, SQL, "PAYMENTDESC", "PAYMENTID")
+        Await ESSA.LoadComboAsync(cmbPmtType, SQL, "PAYMENTDESC", "PAYMENTID")
 
         cmbDType.SelectedIndex = 0
 
@@ -469,7 +480,7 @@ Public Class POS
 
         TGHold.Columns(3).HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight
 
-        LoadTheme()
+        'Await LoadThemeAsync()
 
         mebRPFrom.Value = SDate
         mebRPTo.Value = EDate
@@ -477,6 +488,9 @@ Public Class POS
         Await LoadSalesPersons()
 
         Await GetSMSApiSettings()
+
+        PnlLoading.Refresh()
+        PnlLoading.Visible = False
 
     End Sub
 
@@ -961,7 +975,10 @@ Public Class POS
 
         'LoadHoldBills()
         'LoadProductList()
+        PnlLoading.Visible = True
+        PnlLoading.Refresh()
         Await RefreshBill()
+        PnlLoading.Visible = False
 
     End Sub
 
@@ -1091,7 +1108,7 @@ Public Class POS
             PrintHoldBillUsingCrystalReports(iHoldID)
         End If
         Await RefreshBill()
-        LoadHoldBills()
+        Await LoadHoldBills()
 
     End Sub
 
@@ -1101,6 +1118,11 @@ Public Class POS
 
             If TG.Rows.Count = 0 Then
                 TTip.Show("No items to generate to bill..!", btnStore, 0, 25, 2000)
+                Exit Function
+            End If
+
+            If ESSA.IsDuplicateExists(TG, 0) Then
+                TTip.Show("Duplicate barcode exists", btnStore, 0, 25, 2000)
                 Exit Function
             End If
 
@@ -1341,7 +1363,7 @@ Public Class POS
 
         Try
 
-            Dim rpt = IIf(is3InchPrinter, rptSaleBill, rptSaleBill4inch)
+            Dim rpt As CrystalDecisions.CrystalReports.Engine.ReportDocument = If(is3InchPrinter, rptSaleBill, rptSaleBill4inch)
 
             'Dim rpt As New SaleBill
             Dim ShopName As String = String.Empty
@@ -1349,8 +1371,8 @@ Public Class POS
             Dim ContactNo As String = String.Empty
             Dim GST As String = String.Empty
             SQL = $"select shopname,address1 + ' ' + address2 + ' ' + city + ' ' +  state address,phone,cst from shops where shopid = {ShopID}"
-            With Await ESSA.OpenReaderAsync(SQL)
-                If Await .ReadAsync Then
+            With ESSA.OpenReader(SQL)
+                If .Read Then
                     ShopName = .Item("shopname").trim
                     Address = .Item("address").trim
                     ContactNo = .Item("phone").trim
@@ -1359,105 +1381,85 @@ Public Class POS
                 .Close()
             End With
 
-            SQL = $"select a.taxperc,sum(a.taxable) taxable,sum(tax) tax  from
-            (select distinct d.pluid,
-            case when d.rate > t.val 
-            then t.mx 
-            else t.mn end as taxperc,
-            case when d.rate > t.val 
-            then ROUND((100/(100+t.mx)) * d.amount,2) 
-            else ROUND((100/(100+t.mn)) * d.amount,2)  end as taxable,
-            case when d.rate > t.val 
-            then ROUND(((100/(100+t.mx)) * d.amount)* t.mx * 0.01,2) 
-            else ROUND(((100/(100+t.mn)) * d.amount)* t.mn * 0.01,2) end as tax
-            from billdetails d 
-            inner join billmaster m on m.billid = d.billid and m.shopid = {ShopID} and m.billid = {Id}
-            inner join productmaster p on p.pluid = d.pluid
-            inner join producttax t on t.hsn = p.hsncode) a
-            group by a.taxperc"
-            ESSA.OpenConnection()
-            Using adapter As New SqlDataAdapter(SQL, Con)
-                Using table As New DataTable
-                    Await Task.Run(Sub() adapter.Fill(table))
-                    rpt.Subreports.Item("TaxInfo").SetDataSource(table)
-                End Using
-            End Using
-            'Con.Close()
+            Dim SQL1 = $"select a.taxperc,sum(a.taxable) taxable,sum(tax) tax  from
+                (select distinct d.pluid,
+                case when d.rate > t.val 
+                then t.mx 
+                else t.mn end as taxperc,
+                case when d.rate > t.val 
+                then ROUND((100/(100+t.mx)) * d.amount,2) 
+                else ROUND((100/(100+t.mn)) * d.amount,2)  end as taxable,
+                case when d.rate > t.val 
+                then ROUND(((100/(100+t.mx)) * d.amount)* t.mx * 0.01,2) 
+                else ROUND(((100/(100+t.mn)) * d.amount)* t.mn * 0.01,2) end as tax
+                from billdetails d 
+                inner join billmaster m on m.billid = d.billid and m.shopid = {ShopID} and m.billid = {Id}
+                inner join productmaster p on p.pluid = d.pluid
+                inner join producttax t on t.hsn = p.hsncode) a
+                group by a.taxperc"
+
+            Dim task1 = Task.Run(Function() ESSA.GetDataTable(SQL1))
+
+            Dim SQL2 = $"select distinct paymentdesc mode,sum(paid) amt,sum(refund) refund, billid 
+                from billpayments p where shopid = {ShopID} and billid = {Id}
+                group by paymentdesc,billid"
+
+            Dim task2 = Task.Run(Function() ESSA.GetDataTable(SQL2))
 
 
-            SQL = $"select distinct paymentdesc mode,sum(paid) amt,sum(refund) refund, billid 
-            from billpayments p where shopid = {ShopID} and billid = {Id}
-            group by paymentdesc,billid"
+            Dim SQLMain = $"select 
+                'T' + convert(varchar,m.termid) + '-' + convert(varchar,m.billno) billno,
+                m.billtime date, 
+                d.sno,p.pluname description,d.qty,d.orate rate,d.disamt disc,d.amount,
+                p.plucode barcode,p.hsncode hsn,
+                c.customername name,c.phone mobile
+                from billdetails d 
+                inner join billmaster m on m.billid = d.billid and m.billid = {Id}
+                inner join productmaster p on p.pluid = d.pluid
+                inner join customers c on c.customerid = m.customerid
+                order by d.sno"
 
-            'ESSA.OpenConnection()
-            Using adapter As New SqlDataAdapter(SQL, Con)
-                Using table As New DataTable
-                    Await Task.Run(Sub() adapter.Fill(table))
-                    rpt.Subreports.Item("PaymentInfo").SetDataSource(table)
-                End Using
-            End Using
-            'Con.Close()
+            Dim mainTask = Task.Run(Function() ESSA.GetDataTable(SQLMain))
 
-            SQL = $"select 
-            'T' + convert(varchar,m.termid) + '-' + convert(varchar,m.billno) billno,
-            m.billtime date, 
-            d.sno,p.pluname description,d.qty,d.orate rate,d.disamt disc,d.amount,
-            p.plucode barcode,p.hsncode hsn,
-            c.customername name,c.phone mobile
-            from billdetails d 
-            inner join billmaster m on m.billid = d.billid and m.billid = {Id}
-            inner join productmaster p on p.pluid = d.pluid
-            inner join customers c on c.customerid = m.customerid
-            order by d.sno"
+            Await Task.WhenAll(task1, task2, mainTask)
+            rpt.Subreports.Item("TaxInfo").SetDataSource(task1.Result)
+            rpt.Subreports.Item("PaymentInfo").SetDataSource(task2.Result)
+            rpt.SetDataSource(mainTask.Result)
+            rpt.SetParameterValue("ShopName", ShopName)
+            rpt.SetParameterValue("Address", Address)
+            rpt.SetParameterValue("ContactNo", ContactNo)
+            rpt.SetParameterValue("GST", GST)
+            rpt.PrintOptions.PrinterName = PrinterName
+            'FrmReportViewer.CrystalReportViewer1.ReportSource = rpt
+            'FrmReportViewer.Visible = False
+            'FrmReportViewer.Show()
 
-            'ESSA.OpenConnection()
-            Using adapter As New SqlDataAdapter(SQL, Con)
-                Using table As New DataTable
-                    Await Task.Run(Sub() adapter.Fill(table))
-                    rpt.SetDataSource(table)
-                    rpt.SetParameterValue("ShopName", ShopName)
-                    rpt.SetParameterValue("Address", Address)
-                    rpt.SetParameterValue("ContactNo", ContactNo)
-                    rpt.SetParameterValue("GST", GST)
-                    'rptSaleBill.SetParameterValue("BillType", "Duplicate")
-                    rpt.PrintOptions.PrinterName = PrinterName
-                    'FrmReportViewer.CrystalReportViewer1.ReportSource = rpt
-                    'FrmReportViewer.Visible = False
-                    'FrmReportViewer.Show()
-
-                    'If type = "Original" Then
-                    '    rpt.SetParameterValue("BillType", "Duplicate")
-                    '    rpt.PrintToPrinter(Copies, False, 0, 0)
-                    'End If
-                End Using
-            End Using
             Try
                 If type = "Reprint" Then
                     rpt.SetParameterValue("BillType", "Duplicate")
-                    If NewRePrintCopies = 1 Then
+                    For i = 1 To NewRePrintCopies
                         rpt.PrintToPrinter(1, False, 0, 0)
-                    ElseIf NewRePrintCopies = 2 Then
-                        rpt.PrintToPrinter(1, False, 0, 0)
-                        rpt.PrintToPrinter(1, False, 0, 0)
-                    End If
+                    Next
                 Else
                     rpt.SetParameterValue("BillType", "Original")
-                    If NewPrintCopies = 1 Then
-                        rpt.PrintToPrinter(1, False, 0, 0)
-                    ElseIf NewPrintCopies = 2 Then
-                        rpt.PrintToPrinter(1, False, 0, 0)
+                    rpt.PrintToPrinter(1, False, 0, 0)
+                    If NewPrintCopies = 2 Then
                         rpt.SetParameterValue("BillType", "Duplicate")
                         rpt.PrintToPrinter(1, False, 0, 0)
                     End If
                 End If
+
+                rpt.Close()
+                rpt.SetDataSource(CType(Nothing, DataTable))
+                rpt.Subreports.Item("TaxInfo").SetDataSource(CType(Nothing, DataTable))
+                rpt.Subreports.Item("PaymentInfo").SetDataSource(CType(Nothing, DataTable))
+
             Catch ex As Exception
                 MsgBox(ex.Message, MsgBoxStyle.Critical)
             End Try
-            Con.Close()
 
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical)
-            Con.Close()
         End Try
 
     End Function
@@ -1596,10 +1598,11 @@ Public Class POS
             txtSP.Clear()
             ResetField()
             txtCode.Focus()
-            Await UpdateCustomerComboBox()
             Await GenerateBillNo()
-            Await LoadSalesPersons()
-            Await UpdateShopSettings()
+            'Commented For Quick reset
+            'Await UpdateCustomerComboBox()
+            'Await LoadSalesPersons()
+            'Await UpdateShopSettings()
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical)
         End Try
@@ -1733,14 +1736,14 @@ Public Class POS
 
     End Sub
 
-    Private Sub LoadHoldBills()
+    Private Async Function LoadHoldBills() As Task
 
         SQL = "select BillID,billdt Date,CustName,sum(qty) Quantity,sum(qty*rate) Amount from billdetailshold where shopid = " & ShopID & " group by " _
             & "billid,billdt,CustName order by billid desc"
 
-        With ESSA.OpenReader(SQL)
+        With Await ESSA.OpenReaderAsync(SQL)
             TGHold.Rows.Clear()
-            While .Read
+            While Await .ReadAsync
                 TGHold.Rows.Add()
                 TGHold.Item(0, TGHold.Rows.Count - 1).Value = .Item(0)
                 TGHold.Item(1, TGHold.Rows.Count - 1).Value = Format(.GetDateTime(1), "dd-MM-yyyy")
@@ -1753,7 +1756,7 @@ Public Class POS
 
         If TGHold.Rows.Count > 0 Then btnHold.Text = "Hold (" & TGHold.Rows.Count + 1 & ")"
 
-    End Sub
+    End Function
 
     Private Sub AlignColumn(ByVal DGV As DataGridView, ByVal Col As SByte, ByVal Align As DataGridViewContentAlignment)
 
@@ -1902,6 +1905,10 @@ Public Class POS
 
             'Dim TQty As Double = 0
             TGEdt.Rows.Clear()
+            txtSno.Text = ""
+            txtPlucode.Text = ""
+            txtAQty.Text = ""
+            txtRQty.Text = ""
             If TGBills.CurrentCell Is Nothing Then Exit Sub
 
             'SQL = "select v.pluid,"
@@ -2113,6 +2120,8 @@ Public Class POS
 
         Dim iSno As SByte = 0
 
+        TG.Rows.Clear()
+
         For i As Short = 0 To TGEdt.Rows.Count - 1
             If Val(TGEdt.Item(6, i).Value) > 0 Then
                 TG.Rows.Add()
@@ -2184,6 +2193,8 @@ Public Class POS
         End With
 
         Dim iSno As SByte = 0
+
+        TG.Rows.Clear()
 
         For i As Short = 0 To TGEdt.Rows.Count - 1
             If Val(TGEdt.Item(6, i).Value) > 0 Then
@@ -2686,11 +2697,11 @@ Public Class POS
     Private pPhon As String = ""
     Private pGSTN As String = ""
 
-    Private Sub GetShopAddress()
+    Private Async Function GetShopAddress() As Task
 
         SQL = "select alias,address1,address2,city,state,phone,cst from shops where shopid=" & ShopID
-        With ESSA.OpenReader(SQL)
-            If .Read Then
+        With Await ESSA.OpenReaderAsync(SQL)
+            If Await .ReadAsync Then
                 pName = .GetString(0).Trim
                 pAdd1 = .GetString(1).Trim
                 pAdd2 = .GetString(2).Trim
@@ -2698,9 +2709,10 @@ Public Class POS
                 pPhon = .GetString(5).Trim
                 pGSTN = .GetString(6).Trim
             End If
+            .Close()
         End With
 
-    End Sub
+    End Function
 
     Private PaymentDesc As String = ""
     Private CopyName As String = ""
@@ -3322,7 +3334,7 @@ Public Class POS
 
     End Sub
 
-    Private Sub DeleteSelectedBillsInHold()
+    Private Async Sub DeleteSelectedBillsInHold()
 
         Dim SelectedBillCount As Integer = 0
 
@@ -3349,7 +3361,7 @@ Public Class POS
 
             Next
 
-            LoadHoldBills()
+            Await LoadHoldBills()
 
         Else
 
@@ -3540,7 +3552,12 @@ Public Class POS
 
     Private Async Function UpdateCustomerComboBox() As Task
 
-        SQL = "SELECT CUSTOMERID,CUSTOMERNAME FROM CUSTOMERS ORDER BY CUSTOMERID"
+        SQL = $"SELECT 1 AS CUSTOMERID, 'DEFAULT' AS CUSTOMERNAME
+            UNION ALL 
+            SELECT CUSTOMERID,CUSTOMERNAME 
+            FROM CUSTOMERS 
+            WHERE LOCATIONID = {ShopID} 
+            ORDER BY CUSTOMERID"
         Await ESSA.LoadComboAsync(cmbCustomer, SQL, "CUSTOMERNAME", "CUSTOMERID")
 
     End Function
@@ -3613,7 +3630,7 @@ Public Class POS
             BtnSaveNew.Enabled = False
             PnlLoading.Visible = True
             PnlLoading.BringToFront()
-            Await SaveBill()
+            Await SaveBillNew()
             PnlLoading.Visible = False
             BtnSaveNew.Enabled = True
         Catch ex As Exception
@@ -3849,4 +3866,272 @@ Public Class POS
         'StockSearch.Show(Me)
 
     End Sub
+
+    Private Async Function SaveBillNew() As Task
+
+        Try
+
+            If TG.Rows.Count = 0 Then
+                TTip.Show("No items to generate to bill..!", btnStore, 0, 25, 2000)
+                Exit Function
+            End If
+
+            If ESSA.IsDuplicateExists(TG, 0) Then
+                TTip.Show("Duplicate barcode exists", btnStore, 0, 25, 2000)
+                Exit Function
+            End If
+
+            ESSA.OpenConnection()
+            Dim Cmd = Con.CreateCommand()
+            Dim Trn = Con.BeginTransaction(IsolationLevel.Serializable)
+            Cmd.Transaction = Trn
+            Cmd.CommandType = CommandType.StoredProcedure
+
+            Try
+
+                If Not Edit Then
+                    nTermID = TermID
+                    Await GenerateBillNo()
+                    If HoldID.Count > 0 Then
+                        Dim holdList = String.Join(",", HoldID)
+                        Cmd.CommandType = CommandType.Text
+                        Cmd.CommandText = $"DELETE FROM billdetailshold WHERE shopid = {ShopID} AND billid IN ({holdList})"
+                        Await Cmd.ExecuteNonQueryAsync()
+                        Cmd.CommandType = CommandType.StoredProcedure
+                    End If
+                Else
+                    Cmd.CommandText = "sp_DeleteBillById"
+                    Cmd.Parameters.Clear()
+                    Cmd.Parameters.AddWithValue("@BillId", BillID)
+                    Cmd.Parameters.AddWithValue("@ShopId", ShopID)
+                    Await Cmd.ExecuteNonQueryAsync()
+                End If
+
+                Cmd.CommandText = "sp_InsertBillMaster"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("@BillID", BillID)
+                Cmd.Parameters.AddWithValue("@BillNo", BillNo)
+                Cmd.Parameters.AddWithValue("@BillDt", IIf(ISAdmin,
+                                                           IIf(BillMode = 0 AndAlso Edit = False,
+                                                               Format(Now.Date, "yyyy-MM-dd"),
+                                                               Format(billDt, "yyyy-MM-dd")),
+                                                           Format(Now.Date, "yyyy-MM-dd")))
+                Cmd.Parameters.AddWithValue("@BillTime", IIf(ISAdmin,
+                                                             IIf(BillMode = 0 AndAlso Edit = False,
+                                                                 Format(Now, "yyyy-MM-dd HH:mm:ss"),
+                                                                 Format(billTime, "yyyy-MM-dd HH:mm:ss")),
+                                                             Format(Now, "yyyy-MM-dd HH:mm:ss")))
+                Cmd.Parameters.AddWithValue("@TermID", nTermID)
+                Cmd.Parameters.AddWithValue("@TotQty", Val(lblQty.Text))
+                Cmd.Parameters.AddWithValue("@TotAmt", Val(lblNetAmt.Text))
+                Cmd.Parameters.AddWithValue("@DisPerc", Val(lblDisPerc.Text))
+                Cmd.Parameters.AddWithValue("@DisAmt", Val(lblDisAmt.Text))
+                Cmd.Parameters.AddWithValue("@CustomerID", customerId)
+                Cmd.Parameters.AddWithValue("@RefNo", eRefNo)
+                Cmd.Parameters.AddWithValue("@Remarks", Remark)
+                Cmd.Parameters.AddWithValue("@ShopID", ShopID)
+                Cmd.Parameters.AddWithValue("@UserID", UserID)
+                Cmd.Parameters.AddWithValue("@ISUpdated", 0)
+                Cmd.Parameters.AddWithValue("@WHID", 1)
+                'Dim paramDetails As String = "Parameter Type Info:" & vbCrLf
+
+                'For Each param As SqlParameter In Cmd.Parameters
+                '    paramDetails &= $"{param.ParameterName} - {param.Value} ({param.Value?.GetType()?.FullName}){vbCrLf}"
+                'Next
+
+                'MsgBox(paramDetails, MsgBoxStyle.Information)
+                Await Cmd.ExecuteNonQueryAsync()
+
+                Cmd.CommandText = "sp_InsertBillDetails"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("@Details", BuildBillDetailsTable())
+                Await Cmd.ExecuteNonQueryAsync()
+
+                Cmd.CommandText = "sp_InsertBillSalePersons"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("@Details", BuildSalePersonsTable())
+                Await Cmd.ExecuteNonQueryAsync()
+
+                Cmd.CommandText = "sp_InsertBillPayments"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("@Payments", BuildPaymentsTable())
+                Await Cmd.ExecuteNonQueryAsync()
+
+                Trn.Commit()
+                Con.Close()
+
+                Dim tasks As New List(Of Task)()
+                If chkEP.Checked Then
+                    tasks.Add(PrintBillUsingCrystalReport(BillID, "Original"))
+                End If
+
+                If Not String.IsNullOrWhiteSpace(MobileNo) AndAlso MobileNo.Length = 10 Then
+                    tasks.Add(SendSmsAsync(MobileNo, ShopNm, Format(Now.Date, "dd-MM-yyyy"), shopNumber))
+                    MobileNo = ""
+                End If
+
+                Await Task.WhenAll(tasks)
+                Await RefreshBill()
+
+            Catch ex As SqlException
+                Trn.Rollback()
+                Con.Close()
+                MsgBox("SQL Error: " & ex.Message, MsgBoxStyle.Critical)
+            Catch ex1 As Exception
+                Trn.Rollback()
+                Con.Close()
+                MsgBox("Application Error: " & ex1.Message, MsgBoxStyle.Critical)
+            Finally
+                Trn?.Dispose()
+                If Con.State = ConnectionState.Open Then Con.Close()
+            End Try
+        Catch ex As Exception
+            MsgBox("Unhandled Error: " & ex.Source, MsgBoxStyle.Critical)
+        End Try
+
+    End Function
+
+    Private Function BuildBillDetailsTable() As DataTable
+        Dim dt As New DataTable()
+        dt.Columns.AddRange({
+            New DataColumn("BillID", GetType(Long)),
+            New DataColumn("BillDt", GetType(DateTime)),
+            New DataColumn("PluID", GetType(Integer)),
+            New DataColumn("Qty", GetType(Double)),
+            New DataColumn("RQty", GetType(Double)),
+            New DataColumn("Rate", GetType(Decimal)),
+            New DataColumn("Amount", GetType(Decimal)),
+            New DataColumn("DisPerc", GetType(Double)),
+            New DataColumn("DisAmt", GetType(Decimal)),
+            New DataColumn("ORate", GetType(Decimal)),
+            New DataColumn("OBillID", GetType(Long)),
+            New DataColumn("BillMode", GetType(Byte)),
+            New DataColumn("TermID", GetType(Byte)),
+            New DataColumn("ShopID", GetType(Byte)),
+            New DataColumn("Sno", GetType(Short)),
+            New DataColumn("ISUpdated", GetType(Byte)),
+            New DataColumn("WHID", GetType(Byte))
+        })
+
+        For i As Integer = 0 To TG.Rows.Count - 1
+            dt.Rows.Add(
+                BillID,
+                IIf(ISAdmin,
+                    IIf(BillMode = 0 And Edit = False,
+                        Format(Now.Date, "yyyy-MM-dd"),
+                        Format(billDt, "yyyy-MM-dd")),
+                    Format(Now.Date, "yyyy-MM-dd")),        ' BillDt
+                Val(TG.Item(0, i).Value),                   ' PluID
+                Val(TG.Item(5, i).Value),                   ' Qty
+                0,                                          ' RQty (default 0)
+                Val(TG.Item(11, i).Value),                  ' Rate
+                Val(TG.Item(9, i).Value),                   ' Amount
+                Val(TG.Item(7, i).Value),                   ' DisPerc
+                Val(TG.Item(8, i).Value),                   ' DisAmt
+                Val(TG.Item(6, i).Value),                   ' ORate
+                Val(TG.Item(12, i).Value),                  ' OBILLID
+                BillMode,
+                nTermID,
+                ShopID,
+                i + 1,                                      ' Sno
+                0,                                          ' ISUpdated
+                1                                           ' WHID (default 1)
+            )
+        Next
+
+        Return dt
+    End Function
+
+    Private Function BuildPaymentsTable() As DataTable
+        Dim dt As New DataTable()
+        dt.Columns.AddRange({
+        New DataColumn("BillID", GetType(Long)),
+        New DataColumn("ShopID", GetType(Byte)),
+        New DataColumn("PaymentID", GetType(Byte)),
+        New DataColumn("PaymentDesc", GetType(String)),
+        New DataColumn("Paid", GetType(Decimal)),
+        New DataColumn("Refund", GetType(Decimal)),
+        New DataColumn("RefNo", GetType(String)),
+        New DataColumn("RefDt", GetType(DateTime)),
+        New DataColumn("Sno", GetType(Byte)),
+        New DataColumn("TermID", GetType(Byte)),
+        New DataColumn("BillDt", GetType(DateTime)),
+        New DataColumn("IsUpdated", GetType(Byte)),
+        New DataColumn("WHID", GetType(Byte))
+    })
+
+        Dim orderNo As Byte = 1
+        If NewPaymentMode Then
+            If Val(TxtCashNew.Text) > 0 Then
+                dt.Rows.Add(BillID, ShopID, 1, "CASH", Val(TxtCashNew.Text), Val(LblReturnInCash.Text), "", Now, orderNo, nTermID, IIf(ISAdmin,
+                    IIf(BillMode = 0 And Edit = False,
+                        Format(Now.Date, "yyyy-MM-dd"),
+                        Format(billDt, "yyyy-MM-dd")),
+                    Format(Now.Date, "yyyy-MM-dd")), 0, 1)
+                orderNo += 1
+            End If
+            If Val(TxtCardNew.Text) > 0 Then
+                dt.Rows.Add(BillID, ShopID, 2, "CARD", Val(TxtCardNew.Text), 0, "", Now, orderNo, nTermID, IIf(ISAdmin,
+                    IIf(BillMode = 0 And Edit = False,
+                        Format(Now.Date, "yyyy-MM-dd"),
+                        Format(billDt, "yyyy-MM-dd")),
+                    Format(Now.Date, "yyyy-MM-dd")), 0, 1)
+                orderNo += 1
+            End If
+            If Val(TxtUpiNew.Text) > 0 Then
+                dt.Rows.Add(BillID, ShopID, 3, "UPI", Val(TxtUpiNew.Text), 0, "", Now, orderNo, nTermID, IIf(ISAdmin,
+                    IIf(BillMode = 0 And Edit = False,
+                        Format(Now.Date, "yyyy-MM-dd"),
+                        Format(billDt, "yyyy-MM-dd")),
+                    Format(Now.Date, "yyyy-MM-dd")), 0, 1)
+            End If
+        Else
+            For j As Integer = 0 To TGPmt.Rows.Count - 1
+                dt.Rows.Add(
+                BillID,
+                ShopID,
+                Val(TGPmt.Item(0, j).Value),            'PaymentId
+                TGPmt.Item(1, j).Value.ToString(),      'PaymentDesc    
+                Val(TGPmt.Item(4, j).Value),            'Paid
+                Val(TGPmt.Item(5, j).Value),            'Refund
+                TGPmt.Item(2, j).Value.ToString(),      'Ref No
+                CDate(TGPmt.Item(3, j).Value),          'Ref Date
+                j + 1,                                  'S No
+                nTermID,
+                IIf(ISAdmin,
+                    IIf(BillMode = 0 And Edit = False,
+                        Format(Now.Date, "yyyy-MM-dd"),
+                        Format(billDt, "yyyy-MM-dd")),
+                    Format(Now.Date, "yyyy-MM-dd")),    'Bill Date
+                0,                                      'IsUpdated
+                1                                       'WHID
+            )
+            Next
+        End If
+
+        Return dt
+    End Function
+
+    Private Function BuildSalePersonsTable() As DataTable
+        Dim dt As New DataTable()
+        dt.Columns.AddRange({
+        New DataColumn("BillID", GetType(Long)),
+        New DataColumn("SPID", GetType(Short)),
+        New DataColumn("PluID", GetType(Integer)),
+        New DataColumn("ShopID", GetType(Byte))
+    })
+
+        For i As Integer = 0 To TG.Rows.Count - 1
+            dt.Rows.Add(
+            BillID,
+            Val(TG.Item(16, i).Value), 'SPID
+            Val(TG.Item(0, i).Value),  'PLUID
+            ShopID
+        )
+        Next
+
+        Return dt
+    End Function
+
+
 End Class

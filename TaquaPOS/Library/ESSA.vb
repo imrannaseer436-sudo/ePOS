@@ -468,4 +468,37 @@ Public Class ESSA
 
     End Function
 
+    Public Shared Function IsDuplicateExists(ByVal DGV As DataGridView, ByVal Column As Integer) As Boolean
+        Dim valueSet As New HashSet(Of String)()
+
+        For Each row As DataGridViewRow In DGV.Rows
+            If Not row.IsNewRow Then
+                Dim cellValue As String = Convert.ToString(row.Cells(Column).Value)
+
+                If valueSet.Contains(cellValue) Then
+                    Return True
+                Else
+                    valueSet.Add(cellValue)
+                End If
+            End If
+        Next
+
+        Return False
+    End Function
+
+    Public Shared Function GetDataTable(sql As String) As DataTable
+        Dim dt As New DataTable
+        Using con As New SqlConnection(ConStr)
+            Using cmd As New SqlCommand(sql, con)
+                con.Open()
+                Using da As New SqlDataAdapter(cmd)
+                    da.Fill(dt)
+                End Using
+            End Using
+        End Using
+        Return dt
+    End Function
+
+
+
 End Class

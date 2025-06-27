@@ -6,13 +6,13 @@ Module Common
     Public SQL As String
     Public Con As SqlConnection
     Public ConStr As String = "Data Source=192.168.0.100;user id=sa;password=sa#999s%5;initial catalog=eWarehouse1213"
-    Public UserID As SByte = 0
+    Public UserID As Byte = 0
     Public BusinessDate As Date
     Public UserNm As String = ""
-    Public ShopID As SByte = 0
+    Public ShopID As Byte = 0
     Public ShopCd As String = ""
     Public ShopNm As String = ""
-    Public TermID As SByte = 0
+    Public TermID As Byte = 0
     Public PrinterName As String = ""
     Public NetworkPrinterAddress As String = ""
     Public DosModePrinter As Boolean = False
