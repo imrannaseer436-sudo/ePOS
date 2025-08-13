@@ -357,6 +357,8 @@ Partial Class POS
         Me.TxtCashNew = New System.Windows.Forms.TextBox()
         Me.Label78 = New System.Windows.Forms.Label()
         Me.Label86 = New System.Windows.Forms.Label()
+        Me.Label91 = New System.Windows.Forms.Label()
+        Me.Label92 = New System.Windows.Forms.Label()
         Me.pnlWindow.SuspendLayout()
         CType(Me.DgvSP, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlRateUpdater.SuspendLayout()
@@ -954,7 +956,7 @@ Partial Class POS
         Me.Label14.AutoSize = True
         Me.Label14.Location = New System.Drawing.Point(516, 389)
         Me.Label14.Name = "Label14"
-        Me.Label14.Size = New System.Drawing.Size(79, 15)
+        Me.Label14.Size = New System.Drawing.Size(80, 15)
         Me.Label14.TabIndex = 16
         Me.Label14.Text = "Total Amount"
         '
@@ -1280,7 +1282,7 @@ Partial Class POS
         Me.lblDType.AutoSize = True
         Me.lblDType.Location = New System.Drawing.Point(406, 121)
         Me.lblDType.Name = "lblDType"
-        Me.lblDType.Size = New System.Drawing.Size(50, 15)
+        Me.lblDType.Size = New System.Drawing.Size(51, 15)
         Me.lblDType.TabIndex = 7
         Me.lblDType.Text = "Dis Type"
         Me.lblDType.Visible = False
@@ -1848,7 +1850,7 @@ Partial Class POS
         Me.Label20.AutoSize = True
         Me.Label20.Location = New System.Drawing.Point(9, 17)
         Me.Label20.Name = "Label20"
-        Me.Label20.Size = New System.Drawing.Size(81, 15)
+        Me.Label20.Size = New System.Drawing.Size(82, 15)
         Me.Label20.TabIndex = 4
         Me.Label20.Text = "Payment Type"
         '
@@ -2143,7 +2145,7 @@ Partial Class POS
         Me.Label23.AutoSize = True
         Me.Label23.Location = New System.Drawing.Point(121, 28)
         Me.Label23.Name = "Label23"
-        Me.Label23.Size = New System.Drawing.Size(19, 15)
+        Me.Label23.Size = New System.Drawing.Size(20, 15)
         Me.Label23.TabIndex = 7
         Me.Label23.Text = "To"
         '
@@ -2249,7 +2251,7 @@ Partial Class POS
         Me.Label18.AutoSize = True
         Me.Label18.Location = New System.Drawing.Point(10, 103)
         Me.Label18.Name = "Label18"
-        Me.Label18.Size = New System.Drawing.Size(52, 15)
+        Me.Label18.Size = New System.Drawing.Size(53, 15)
         Me.Label18.TabIndex = 0
         Me.Label18.Text = "Terminal"
         '
@@ -2322,7 +2324,7 @@ Partial Class POS
         Me.Label69.Font = New System.Drawing.Font("Segoe UI", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label69.Location = New System.Drawing.Point(431, 375)
         Me.Label69.Name = "Label69"
-        Me.Label69.Size = New System.Drawing.Size(76, 13)
+        Me.Label69.Size = New System.Drawing.Size(75, 13)
         Me.Label69.TabIndex = 18
         Me.Label69.Text = "Total Return :"
         Me.Label69.Visible = False
@@ -2344,7 +2346,7 @@ Partial Class POS
         Me.Label66.Font = New System.Drawing.Font("Segoe UI", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label66.Location = New System.Drawing.Point(618, 377)
         Me.Label66.Name = "Label66"
-        Me.Label66.Size = New System.Drawing.Size(64, 13)
+        Me.Label66.Size = New System.Drawing.Size(63, 13)
         Me.Label66.TabIndex = 16
         Me.Label66.Text = "Total Sold :"
         Me.Label66.Visible = False
@@ -2742,7 +2744,7 @@ Partial Class POS
         Me.Label34.ForeColor = System.Drawing.Color.DimGray
         Me.Label34.Location = New System.Drawing.Point(132, 42)
         Me.Label34.Name = "Label34"
-        Me.Label34.Size = New System.Drawing.Size(33, 15)
+        Me.Label34.Size = New System.Drawing.Size(34, 15)
         Me.Label34.TabIndex = 0
         Me.Label34.Text = "Term"
         '
@@ -2752,7 +2754,7 @@ Partial Class POS
         Me.Label33.ForeColor = System.Drawing.Color.DimGray
         Me.Label33.Location = New System.Drawing.Point(13, 88)
         Me.Label33.Name = "Label33"
-        Me.Label33.Size = New System.Drawing.Size(19, 15)
+        Me.Label33.Size = New System.Drawing.Size(20, 15)
         Me.Label33.TabIndex = 0
         Me.Label33.Text = "To"
         '
@@ -2844,6 +2846,8 @@ Partial Class POS
         '
         Me.pnlShortcuts.BackColor = System.Drawing.Color.FromArgb(CType(CType(226, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(217, Byte), Integer))
         Me.pnlShortcuts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.pnlShortcuts.Controls.Add(Me.Label91)
+        Me.pnlShortcuts.Controls.Add(Me.Label92)
         Me.pnlShortcuts.Controls.Add(Me.Label58)
         Me.pnlShortcuts.Controls.Add(Me.Label59)
         Me.pnlShortcuts.Controls.Add(Me.Label49)
@@ -2867,9 +2871,9 @@ Partial Class POS
         Me.pnlShortcuts.Controls.Add(Me.Label5)
         Me.pnlShortcuts.Controls.Add(Me.Label2)
         Me.pnlShortcuts.Controls.Add(Me.Label1)
-        Me.pnlShortcuts.Location = New System.Drawing.Point(536, 139)
+        Me.pnlShortcuts.Location = New System.Drawing.Point(568, 139)
         Me.pnlShortcuts.Name = "pnlShortcuts"
-        Me.pnlShortcuts.Size = New System.Drawing.Size(247, 371)
+        Me.pnlShortcuts.Size = New System.Drawing.Size(215, 395)
         Me.pnlShortcuts.TabIndex = 5
         Me.pnlShortcuts.Tag = "535"
         Me.pnlShortcuts.Visible = False
@@ -2878,7 +2882,7 @@ Partial Class POS
         '
         Me.Label58.AutoSize = True
         Me.Label58.BackColor = System.Drawing.Color.Transparent
-        Me.Label58.Location = New System.Drawing.Point(149, 278)
+        Me.Label58.Location = New System.Drawing.Point(87, 308)
         Me.Label58.Name = "Label58"
         Me.Label58.Size = New System.Drawing.Size(51, 15)
         Me.Label58.TabIndex = 13
@@ -2888,17 +2892,17 @@ Partial Class POS
         '
         Me.Label59.AutoSize = True
         Me.Label59.BackColor = System.Drawing.Color.Transparent
-        Me.Label59.Location = New System.Drawing.Point(17, 281)
+        Me.Label59.Location = New System.Drawing.Point(14, 308)
         Me.Label59.Name = "Label59"
         Me.Label59.Size = New System.Drawing.Size(25, 15)
         Me.Label59.TabIndex = 12
-        Me.Label59.Text = "F12"
+        Me.Label59.Text = "F11"
         '
         'Label49
         '
         Me.Label49.AutoSize = True
         Me.Label49.BackColor = System.Drawing.Color.Transparent
-        Me.Label49.Location = New System.Drawing.Point(146, 338)
+        Me.Label49.Location = New System.Drawing.Point(87, 366)
         Me.Label49.Name = "Label49"
         Me.Label49.Size = New System.Drawing.Size(42, 15)
         Me.Label49.TabIndex = 9
@@ -2908,19 +2912,19 @@ Partial Class POS
         '
         Me.Label50.AutoSize = True
         Me.Label50.BackColor = System.Drawing.Color.Transparent
-        Me.Label50.Location = New System.Drawing.Point(148, 308)
+        Me.Label50.Location = New System.Drawing.Point(87, 337)
         Me.Label50.Name = "Label50"
-        Me.Label50.Size = New System.Drawing.Size(64, 15)
+        Me.Label50.Size = New System.Drawing.Size(102, 15)
         Me.Label50.TabIndex = 8
-        Me.Label50.Text = "DISCOUNT"
+        Me.Label50.Text = "TOTAL DISCOUNT"
         '
         'Label51
         '
         Me.Label51.AutoSize = True
         Me.Label51.BackColor = System.Drawing.Color.Transparent
-        Me.Label51.Location = New System.Drawing.Point(149, 248)
+        Me.Label51.Location = New System.Drawing.Point(87, 279)
         Me.Label51.Name = "Label51"
-        Me.Label51.Size = New System.Drawing.Size(86, 15)
+        Me.Label51.Size = New System.Drawing.Size(87, 15)
         Me.Label51.TabIndex = 11
         Me.Label51.Text = "EDIT LINE WISE"
         '
@@ -2928,9 +2932,9 @@ Partial Class POS
         '
         Me.Label52.AutoSize = True
         Me.Label52.BackColor = System.Drawing.Color.Transparent
-        Me.Label52.Location = New System.Drawing.Point(149, 218)
+        Me.Label52.Location = New System.Drawing.Point(87, 221)
         Me.Label52.Name = "Label52"
-        Me.Label52.Size = New System.Drawing.Size(39, 15)
+        Me.Label52.Size = New System.Drawing.Size(40, 15)
         Me.Label52.TabIndex = 10
         Me.Label52.Text = "ALTER"
         '
@@ -2938,7 +2942,7 @@ Partial Class POS
         '
         Me.Label53.AutoSize = True
         Me.Label53.BackColor = System.Drawing.Color.Transparent
-        Me.Label53.Location = New System.Drawing.Point(149, 188)
+        Me.Label53.Location = New System.Drawing.Point(87, 192)
         Me.Label53.Name = "Label53"
         Me.Label53.Size = New System.Drawing.Size(54, 15)
         Me.Label53.TabIndex = 7
@@ -2948,9 +2952,9 @@ Partial Class POS
         '
         Me.Label54.AutoSize = True
         Me.Label54.BackColor = System.Drawing.Color.Transparent
-        Me.Label54.Location = New System.Drawing.Point(148, 158)
+        Me.Label54.Location = New System.Drawing.Point(87, 163)
         Me.Label54.Name = "Label54"
-        Me.Label54.Size = New System.Drawing.Size(52, 15)
+        Me.Label54.Size = New System.Drawing.Size(53, 15)
         Me.Label54.TabIndex = 4
         Me.Label54.Text = "REPRINT"
         '
@@ -2958,7 +2962,7 @@ Partial Class POS
         '
         Me.Label55.AutoSize = True
         Me.Label55.BackColor = System.Drawing.Color.Transparent
-        Me.Label55.Location = New System.Drawing.Point(149, 128)
+        Me.Label55.Location = New System.Drawing.Point(87, 134)
         Me.Label55.Name = "Label55"
         Me.Label55.Size = New System.Drawing.Size(64, 15)
         Me.Label55.TabIndex = 3
@@ -2968,7 +2972,7 @@ Partial Class POS
         '
         Me.Label56.AutoSize = True
         Me.Label56.BackColor = System.Drawing.Color.Transparent
-        Me.Label56.Location = New System.Drawing.Point(148, 98)
+        Me.Label56.Location = New System.Drawing.Point(87, 105)
         Me.Label56.Name = "Label56"
         Me.Label56.Size = New System.Drawing.Size(58, 15)
         Me.Label56.TabIndex = 6
@@ -2978,7 +2982,7 @@ Partial Class POS
         '
         Me.Label57.AutoSize = True
         Me.Label57.BackColor = System.Drawing.Color.Transparent
-        Me.Label57.Location = New System.Drawing.Point(148, 68)
+        Me.Label57.Location = New System.Drawing.Point(87, 76)
         Me.Label57.Name = "Label57"
         Me.Label57.Size = New System.Drawing.Size(35, 15)
         Me.Label57.TabIndex = 5
@@ -2990,7 +2994,7 @@ Partial Class POS
         Me.Label48.BackColor = System.Drawing.Color.Transparent
         Me.Label48.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label48.ForeColor = System.Drawing.Color.FromArgb(CType(CType(84, Byte), Integer), CType(CType(130, Byte), Integer), CType(CType(53, Byte), Integer))
-        Me.Label48.Location = New System.Drawing.Point(59, 4)
+        Me.Label48.Location = New System.Drawing.Point(37, 14)
         Me.Label48.Name = "Label48"
         Me.Label48.Size = New System.Drawing.Size(130, 15)
         Me.Label48.TabIndex = 2
@@ -3000,7 +3004,7 @@ Partial Class POS
         '
         Me.Label47.AutoSize = True
         Me.Label47.BackColor = System.Drawing.Color.Transparent
-        Me.Label47.Location = New System.Drawing.Point(14, 341)
+        Me.Label47.Location = New System.Drawing.Point(14, 366)
         Me.Label47.Name = "Label47"
         Me.Label47.Size = New System.Drawing.Size(27, 15)
         Me.Label47.TabIndex = 1
@@ -3010,17 +3014,17 @@ Partial Class POS
         '
         Me.Label46.AutoSize = True
         Me.Label46.BackColor = System.Drawing.Color.Transparent
-        Me.Label46.Location = New System.Drawing.Point(16, 311)
+        Me.Label46.Location = New System.Drawing.Point(14, 337)
         Me.Label46.Name = "Label46"
-        Me.Label46.Size = New System.Drawing.Size(46, 15)
+        Me.Label46.Size = New System.Drawing.Size(25, 15)
         Me.Label46.TabIndex = 1
-        Me.Label46.Text = "ALT + L"
+        Me.Label46.Text = "F12"
         '
         'Label45
         '
         Me.Label45.AutoSize = True
         Me.Label45.BackColor = System.Drawing.Color.Transparent
-        Me.Label45.Location = New System.Drawing.Point(17, 251)
+        Me.Label45.Location = New System.Drawing.Point(14, 279)
         Me.Label45.Name = "Label45"
         Me.Label45.Size = New System.Drawing.Size(19, 15)
         Me.Label45.TabIndex = 1
@@ -3030,7 +3034,7 @@ Partial Class POS
         '
         Me.Label44.AutoSize = True
         Me.Label44.BackColor = System.Drawing.Color.Transparent
-        Me.Label44.Location = New System.Drawing.Point(17, 221)
+        Me.Label44.Location = New System.Drawing.Point(14, 221)
         Me.Label44.Name = "Label44"
         Me.Label44.Size = New System.Drawing.Size(19, 15)
         Me.Label44.TabIndex = 1
@@ -3040,7 +3044,7 @@ Partial Class POS
         '
         Me.Label31.AutoSize = True
         Me.Label31.BackColor = System.Drawing.Color.Transparent
-        Me.Label31.Location = New System.Drawing.Point(17, 191)
+        Me.Label31.Location = New System.Drawing.Point(14, 192)
         Me.Label31.Name = "Label31"
         Me.Label31.Size = New System.Drawing.Size(19, 15)
         Me.Label31.TabIndex = 1
@@ -3050,7 +3054,7 @@ Partial Class POS
         '
         Me.Label27.AutoSize = True
         Me.Label27.BackColor = System.Drawing.Color.Transparent
-        Me.Label27.Location = New System.Drawing.Point(16, 161)
+        Me.Label27.Location = New System.Drawing.Point(14, 163)
         Me.Label27.Name = "Label27"
         Me.Label27.Size = New System.Drawing.Size(19, 15)
         Me.Label27.TabIndex = 1
@@ -3060,7 +3064,7 @@ Partial Class POS
         '
         Me.Label13.AutoSize = True
         Me.Label13.BackColor = System.Drawing.Color.Transparent
-        Me.Label13.Location = New System.Drawing.Point(17, 131)
+        Me.Label13.Location = New System.Drawing.Point(14, 134)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(19, 15)
         Me.Label13.TabIndex = 1
@@ -3070,7 +3074,7 @@ Partial Class POS
         '
         Me.Label12.AutoSize = True
         Me.Label12.BackColor = System.Drawing.Color.Transparent
-        Me.Label12.Location = New System.Drawing.Point(16, 101)
+        Me.Label12.Location = New System.Drawing.Point(14, 105)
         Me.Label12.Name = "Label12"
         Me.Label12.Size = New System.Drawing.Size(19, 15)
         Me.Label12.TabIndex = 1
@@ -3080,7 +3084,7 @@ Partial Class POS
         '
         Me.Label5.AutoSize = True
         Me.Label5.BackColor = System.Drawing.Color.Transparent
-        Me.Label5.Location = New System.Drawing.Point(16, 71)
+        Me.Label5.Location = New System.Drawing.Point(14, 76)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(19, 15)
         Me.Label5.TabIndex = 1
@@ -3091,7 +3095,7 @@ Partial Class POS
         Me.Label2.AutoSize = True
         Me.Label2.BackColor = System.Drawing.Color.Transparent
         Me.Label2.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(148, 39)
+        Me.Label2.Location = New System.Drawing.Point(87, 44)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(55, 15)
         Me.Label2.TabIndex = 0
@@ -3102,7 +3106,7 @@ Partial Class POS
         Me.Label1.AutoSize = True
         Me.Label1.BackColor = System.Drawing.Color.Transparent
         Me.Label1.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label1.Location = New System.Drawing.Point(14, 39)
+        Me.Label1.Location = New System.Drawing.Point(14, 44)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(33, 15)
         Me.Label1.TabIndex = 0
@@ -3378,7 +3382,7 @@ Partial Class POS
         Me.Label74.AutoSize = True
         Me.Label74.Location = New System.Drawing.Point(166, 55)
         Me.Label74.Name = "Label74"
-        Me.Label74.Size = New System.Drawing.Size(83, 15)
+        Me.Label74.Size = New System.Drawing.Size(84, 15)
         Me.Label74.TabIndex = 7
         Me.Label74.Text = "BILL AMOUNT"
         '
@@ -3997,6 +4001,26 @@ Partial Class POS
         Me.Label86.TabIndex = 0
         Me.Label86.Text = "Payments"
         '
+        'Label91
+        '
+        Me.Label91.AutoSize = True
+        Me.Label91.BackColor = System.Drawing.Color.Transparent
+        Me.Label91.Location = New System.Drawing.Point(87, 250)
+        Me.Label91.Name = "Label91"
+        Me.Label91.Size = New System.Drawing.Size(112, 15)
+        Me.Label91.TabIndex = 15
+        Me.Label91.Text = "DISC PER PRODUCT"
+        '
+        'Label92
+        '
+        Me.Label92.AutoSize = True
+        Me.Label92.BackColor = System.Drawing.Color.Transparent
+        Me.Label92.Location = New System.Drawing.Point(14, 250)
+        Me.Label92.Name = "Label92"
+        Me.Label92.Size = New System.Drawing.Size(19, 15)
+        Me.Label92.TabIndex = 14
+        Me.Label92.Text = "F7"
+        '
         'POS
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -4389,4 +4413,6 @@ Partial Class POS
     Friend WithEvents Label86 As Label
     Friend WithEvents LblReturnInCash As Label
     Friend WithEvents BtnSkip As Button
+    Friend WithEvents Label91 As Label
+    Friend WithEvents Label92 As Label
 End Class

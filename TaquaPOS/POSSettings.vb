@@ -78,6 +78,9 @@ Public Class POSSettings
             nCon.Open()
             If nCon.State = ConnectionState.Open Then
                 nCon.Close()
+                ShopCd = txtShopCode.Text.Trim
+                TermID = txtTermID.Text.Trim
+                PrinterName = txtPrinter.Text.Trim
             End If
             nCon.Dispose()
         Catch ex As SqlException
@@ -177,6 +180,7 @@ Public Class POSSettings
 
     Private Sub btnClose_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClose.Click
 
+        Login.Show()
         Close()
 
     End Sub

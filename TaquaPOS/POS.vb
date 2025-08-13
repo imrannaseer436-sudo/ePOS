@@ -529,7 +529,7 @@ Public Class POS
                 If TG.Rows.Count = 0 Then Exit Sub
                 txtCode.Text = TG.Item(2, TG.CurrentRow.Index).Value
                 txtQty.Text = TG.Item(5, TG.CurrentRow.Index).Value
-                txtSP.Text = TG.Item(16, TG.CurrentRow.Index).Value 'SPID
+                txtSP.Text = TG.Item(16, TG.CurrentRow.Index).Value 'SPCode
                 txtRate.Text = Format(Val(TG.Item(6, TG.CurrentRow.Index).Value), "0.00")
                 txtDVal.Text = Format(Val(TG.Item(7, TG.CurrentRow.Index).Value), "0.0")
                 DiscountLimit = Val(TG.Item(14, TG.CurrentRow.Index).Value)
@@ -561,12 +561,12 @@ Public Class POS
                         'txtQty.Select()
                         'txtQty.Focus()
 
-                        'txtSP.SelectAll() ' For sales person entry 
-                        'txtSP.Focus()
-                        txtSP.Text = 1
-                        txtQty.Text = 1
-                        txtQty.Select()
-                        txtQty.Focus()
+                        txtSP.SelectAll() ' For sales person entry 
+                        txtSP.Focus()
+                        'txtSP.Text = 1
+                        'txtQty.Text = 1
+                        'txtQty.Select()
+                        'txtQty.Focus()
                         FreshDiscount = False
                         DiscountLimit = 0
                         txtDVal.Text = DiscountLimit
@@ -838,7 +838,7 @@ Public Class POS
             TG.Item(14, NRI).Value = DiscountLimit
             TG.Item(15, NRI).Value = IIf(FreshDiscount, 1, 0)
 
-            'ADDING SPID
+            'ADDING SPCode
             '- - - - - - - -  - - - - - - - - - -
             TG.Item(16, NRI).Value = Val(txtSP.Text)
 
@@ -4132,6 +4132,5 @@ Public Class POS
 
         Return dt
     End Function
-
 
 End Class
