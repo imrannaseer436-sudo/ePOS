@@ -498,13 +498,14 @@ Public Class POS
 
         'Adding SPID FROM SalesPersons
 
-        SQL = "SELECT SPId,SPCode FROM SalesPersons where shopid = " & ShopID & ""
+        SQL = "SELECT SPId,SPCode,Name FROM SalesPersons where shopid = " & ShopID & ""
         DgvSP.Rows.Clear()
         With Await ESSA.OpenReaderAsync(SQL)
             While Await .ReadAsync()
                 DgvSP.Rows.Add()
                 DgvSP.Item(1, DgvSP.Rows.Count - 1).Value = .Item(0)
                 DgvSP.Item(0, DgvSP.Rows.Count - 1).Value = .Item(1)
+                DgvSP.Item(2, DgvSP.Rows.Count - 1).Value = .GetString(2)
             End While
             .Close()
         End With
@@ -801,6 +802,8 @@ Public Class POS
             TG.Item(14, TG.CurrentRow.Index).Value = DiscountLimit
             TG.Item(15, TG.CurrentRow.Index).Value = IIf(FreshDiscount, 1, 0)
             TG.Item(16, TG.CurrentRow.Index).Value = Val(txtSP.Text)
+            TG.Item(17, TG.CurrentRow.Index).Value = GetColumnValueUsingAnontherColumnValueInDataGridView(DgvSP, txtSP.Text, 0, 2)
+
 
         Else
 
@@ -841,6 +844,8 @@ Public Class POS
             'ADDING SPCode
             '- - - - - - - -  - - - - - - - - - -
             TG.Item(16, NRI).Value = Val(txtSP.Text)
+            TG.Item(17, NRI).Value = GetColumnValueUsingAnontherColumnValueInDataGridView(DgvSP, txtSP.Text, 0, 2)
+
 
         End If
 
@@ -1802,7 +1807,7 @@ Public Class POS
         'SQL = "select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.orate,d.disperc,d.disamt,d.amount,0,d.rate,v.stock from billdetailshold d,productmaster p,v_stockpos v where d.pluid=v.pluid and d.pluid=p.pluid and d.billid=" & holdBillId & " order by d.sno"
 
         'for sales perosn
-        SQL = "select a.*,isnull(b.spcode,1) from (select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.orate,d.disperc,d.disamt,d.amount,d.rate,v.stock,d.billid from billdetailshold d,productmaster p,v_stockpos v where d.pluid=v.pluid and d.pluid=p.pluid and v.location_id = " & ShopID & " and d.shopid = " & ShopID & " and d.billid=" & holdBillId & ")a left join (select h.*,s.spcode from billsalepersonshold h, salespersons s where s.spid = h.spid and h.shopid = " & ShopID & ") b on b.billid = a.billid and b.pluid = a.pluid order by a.sno"
+        SQL = "select a.*,isnull(b.spcode,1) spcode, isnull(b.name, 'UNSPECIFIED') spname from (select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.orate,d.disperc,d.disamt,d.amount,d.rate,v.stock,d.billid from billdetailshold d,productmaster p,v_stockpos v where d.pluid=v.pluid and d.pluid=p.pluid and v.location_id = " & ShopID & " and d.shopid = " & ShopID & " and d.billid=" & holdBillId & ")a left join (select h.*,s.spcode, s.name from billsalepersonshold h, salespersons s where s.spcode = h.spid and h.shopid = s.shopid and h.shopid = " & ShopID & ") b on b.billid = a.billid and b.pluid = a.pluid order by a.sno"
         With ESSA.OpenReader(SQL)
             While .Read
                 HoldSerialNo += 1
@@ -1819,7 +1824,9 @@ Public Class POS
                 TG.Item(9, TG.Rows.Count - 1).Value = Format(.Item(9), "0.00")
                 TG.Item(11, TG.Rows.Count - 1).Value = Format(.Item(10), "0.00")
                 TG.Item(13, TG.Rows.Count - 1).Value = .Item(11)
-                TG.Item(16, TG.Rows.Count - 1).Value = .Item(13)
+                TG.Item(16, TG.Rows.Count - 1).Value = .Item(13) 'SPCODE
+                TG.Item(17, TG.Rows.Count - 1).Value = .Item(14) 'SPNAME
+
             End While
             .Close()
         End With
@@ -1919,7 +1926,7 @@ Public Class POS
             'SERVER ABU
             'SQL = "select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.rate,d.disperc,d.disamt,d.amount,d.rate from billdetails d,productmaster p where d.pluid=p.pluid and d.billid=" & TGBills.Item(0, TGBills.CurrentRow.Index).Value & " order by d.sno"
 
-            SQL = "select a.*,isnull(b.spcode,1) from (select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.rate,d.disperc,d.disamt,d.amount,d.billid from billdetails d,productmaster p where d.pluid=p.pluid and d.billid=" & TGBills.Item(0, TGBills.CurrentRow.Index).Value & ") a left join (select sp.pluid,sp.billid,sp.spid,s.spcode from billsalepersons sp inner join salespersons s on sp.spid = s.spcode and sp.shopid = " & ShopID & ") b on b.billid = a.billid and b.pluid = a.pluid order by a.sno"
+            SQL = "select a.*,isnull(b.spcode,1) spcode, isnull(b.name, 'UNSPECIFIED') spname from (select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.rate,d.disperc,d.disamt,d.amount,d.billid from billdetails d,productmaster p where d.pluid=p.pluid and d.billid=" & TGBills.Item(0, TGBills.CurrentRow.Index).Value & ") a left join (select sp.pluid,sp.billid,sp.spid,s.spcode,s.name from billsalepersons sp inner join salespersons s on sp.spid = s.spcode and sp.shopid = s.shopid and sp.shopid = " & ShopID & ") b on b.billid = a.billid and b.pluid = a.pluid order by a.sno"
 
             With ESSA.OpenReader(SQL)
                 While .Read
@@ -1940,6 +1947,8 @@ Public Class POS
                     'SPID
                     TGEdt.Item(12, TGEdt.Rows.Count - 1).Value = Format(.Item(6), "0.00")
                     TGEdt.Item(13, TGEdt.Rows.Count - 1).Value = .Item(11)
+                    TGEdt.Item(14, TGEdt.Rows.Count - 1).Value = .Item(12)
+
                     'TQty += .Item(5)
                 End While
                 .Close()
@@ -2047,7 +2056,7 @@ Public Class POS
         '    & "select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.orate,d.disperc,d.disamt,d.amount,d.rate,(v.stock+d.qty) stk from billdetails d,productmaster p,v_stockpos v where d.pluid=v.pluid and d.pluid=p.pluid and d.billid=" & TGBills.Item(0, TGBills.CurrentRow.Index).Value & " order by d.sno"
 
         SQL = "select billid,billno,customerid,termid,billdt,billtime from billmaster where shopid = " & ShopID & " and billid=" & Val(TGBills.Item(0, TGBills.CurrentRow.Index).Value) & ";" _
-            & "select a.*,isnull(b.spcode,1) from (select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.orate,d.disperc,d.disamt,d.amount,d.rate,(v.stock+d.qty) stk,d.billid from billdetails d,productmaster p,v_stockpos v where d.shopid = " & ShopID & " and v.location_id = " & ShopID & " and d.pluid=v.pluid and d.pluid=p.pluid and d.billid=" & TGBills.Item(0, TGBills.CurrentRow.Index).Value & ")a left join (select bsp.billid,bsp.pluid,bsp.spid,sp.spcode from billsalepersons bsp inner join salespersons sp on sp.spcode = bsp.spid and bsp.shopid = " & ShopID & ") b on b.billid = a.billid and b.pluid = a.pluid order by a.sno"
+            & "select a.*,isnull(b.spcode,1) spcode, isnull(b.name, 'UNSPECIFIED') spname  from (select d.pluid,d.sno,p.plucode,p.pluname,p.units,d.qty,d.orate,d.disperc,d.disamt,d.amount,d.rate,(v.stock+d.qty) stk,d.billid from billdetails d,productmaster p,v_stockpos v where d.shopid = " & ShopID & " and v.location_id = " & ShopID & " and d.pluid=v.pluid and d.pluid=p.pluid and d.billid=" & TGBills.Item(0, TGBills.CurrentRow.Index).Value & ")a left join (select bsp.billid,bsp.pluid,bsp.spid,sp.spcode,sp.name from billsalepersons bsp inner join salespersons sp on sp.spcode = bsp.spid and sp.shopid = bsp.shopid and bsp.shopid = " & ShopID & ") b on b.billid = a.billid and b.pluid = a.pluid order by a.sno"
 
         With ESSA.OpenReader(SQL)
             If .Read Then
@@ -2080,8 +2089,10 @@ Public Class POS
                 TG.Item(10, TG.Rows.Count - 1).Value = ""
                 TG.Item(11, TG.Rows.Count - 1).Value = Format(.Item(10), "0.00")
                 TG.Item(13, TG.Rows.Count - 1).Value = .Item(11)
+
                 'SPID
                 TG.Item(16, TG.Rows.Count - 1).Value = .Item(13)
+                TG.Item(17, TG.Rows.Count - 1).Value = .Item(14)
             End While
 
             .Close()
@@ -2140,6 +2151,7 @@ Public Class POS
                 TG.Item(11, TG.Rows.Count - 1).Value = Format(Val(TGEdt.Item(12, i).Value), "0.00")
                 TG.Item(12, TG.Rows.Count - 1).Value = BillID  'OLD BILL NUMBER
                 TG.Item(16, TG.Rows.Count - 1).Value = TGEdt.Item(13, i).Value 'SPID
+                TG.Item(17, TG.Rows.Count - 1).Value = TGEdt.Item(14, i).Value 'SPName
             End If
         Next
 
@@ -2214,6 +2226,7 @@ Public Class POS
                 TG.Item(11, TG.Rows.Count - 1).Value = Format(Val(TGEdt.Item(12, i).Value), "0.00")
                 TG.Item(12, TG.Rows.Count - 1).Value = Val(TGBills.Item(0, TGBills.CurrentRow.Index).Value)        'BillID  'OLD BILL NUMBER
                 TG.Item(16, TG.Rows.Count - 1).Value = TGEdt.Item(13, i).Value 'SPID
+                TG.Item(17, TG.Rows.Count - 1).Value = TGEdt.Item(14, i).Value 'SPName
             End If
         Next
 
@@ -4131,6 +4144,21 @@ Public Class POS
         Next
 
         Return dt
+    End Function
+
+    Private Function GetColumnValueUsingAnontherColumnValueInDataGridView(DGV As DataGridView, SearchTerm As String, SearchColumn As Integer, ValueColumn As Integer) As String
+        Dim foundValue = "UNSPECIFIED"
+
+        For Each row As DataGridViewRow In DGV.Rows
+            If Not row.IsNewRow Then
+                If row.Cells(SearchColumn).Value = SearchTerm Then
+                    foundValue = row.Cells(ValueColumn).Value
+                    Exit For
+                End If
+            End If
+        Next
+
+        Return foundValue
     End Function
 
 End Class
