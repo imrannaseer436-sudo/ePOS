@@ -1419,7 +1419,7 @@ Public Class POS
                 from billdetails d 
                 inner join billmaster m on m.billid = d.billid and m.shopid = {ShopID} and m.billid = {Id}
                 inner join productattributes a on a.pluid = d.pluid
-                inner join producttax t on a.deptid = t.deptid and a.catid = t.catid and a.materialid = t.matid and t.isupdated = {TaxVersion}) a
+                inner join producttax t on a.deptid = t.deptid and a.catid = t.catid and a.materialid = t.matid and t.isupdated = m.isupdated) a
                 group by a.taxperc"
 
             Dim task1 = Task.Run(Function() ESSA.GetDataTable(SQL1))
@@ -1454,33 +1454,33 @@ Public Class POS
             rpt.SetParameterValue("ContactNo", ContactNo)
             rpt.SetParameterValue("GST", GST)
             rpt.PrintOptions.PrinterName = PrinterName
-            'FrmReportViewer.CrystalReportViewer1.ReportSource = rpt
-            'FrmReportViewer.Visible = False
-            'FrmReportViewer.Show()
+            FrmReportViewer.CrystalReportViewer1.ReportSource = rpt
+            FrmReportViewer.Visible = False
+            FrmReportViewer.Show()
 
-            Try
-                If type = "Reprint" Then
-                    rpt.SetParameterValue("BillType", "Duplicate")
-                    For i = 1 To NewRePrintCopies
-                        rpt.PrintToPrinter(1, False, 0, 0)
-                    Next
-                Else
-                    rpt.SetParameterValue("BillType", "Original")
-                    rpt.PrintToPrinter(1, False, 0, 0)
-                    If NewPrintCopies = 2 Then
-                        rpt.SetParameterValue("BillType", "Duplicate")
-                        rpt.PrintToPrinter(1, False, 0, 0)
-                    End If
-                End If
+            'Try
+            '    If type = "Reprint" Then
+            '        rpt.SetParameterValue("BillType", "Duplicate")
+            '        For i = 1 To NewRePrintCopies
+            '            rpt.PrintToPrinter(1, False, 0, 0)
+            '        Next
+            '    Else
+            '        rpt.SetParameterValue("BillType", "Original")
+            '        rpt.PrintToPrinter(1, False, 0, 0)
+            '        If NewPrintCopies = 2 Then
+            '            rpt.SetParameterValue("BillType", "Duplicate")
+            '            rpt.PrintToPrinter(1, False, 0, 0)
+            '        End If
+            '    End If
 
-                rpt.Close()
-                rpt.SetDataSource(CType(Nothing, DataTable))
-                rpt.Subreports.Item("TaxInfo").SetDataSource(CType(Nothing, DataTable))
-                rpt.Subreports.Item("PaymentInfo").SetDataSource(CType(Nothing, DataTable))
+            '    rpt.Close()
+            '    rpt.SetDataSource(CType(Nothing, DataTable))
+            '    rpt.Subreports.Item("TaxInfo").SetDataSource(CType(Nothing, DataTable))
+            '    rpt.Subreports.Item("PaymentInfo").SetDataSource(CType(Nothing, DataTable))
 
-            Catch ex As Exception
-                MsgBox(ex.Message, MsgBoxStyle.Critical)
-            End Try
+            'Catch ex As Exception
+            '    MsgBox(ex.Message, MsgBoxStyle.Critical)
+            'End Try
 
         Catch ex As Exception
             MsgBox(ex.Message, MsgBoxStyle.Critical)
@@ -3963,7 +3963,7 @@ Public Class POS
                 Cmd.Parameters.AddWithValue("@Remarks", Remark)
                 Cmd.Parameters.AddWithValue("@ShopID", ShopID)
                 Cmd.Parameters.AddWithValue("@UserID", UserID)
-                Cmd.Parameters.AddWithValue("@ISUpdated", 0)
+                Cmd.Parameters.AddWithValue("@ISUpdated", TaxVersion)
                 Cmd.Parameters.AddWithValue("@WHID", 1)
                 'Dim paramDetails As String = "Parameter Type Info:" & vbCrLf
 
