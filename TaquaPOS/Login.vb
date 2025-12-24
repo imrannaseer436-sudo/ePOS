@@ -148,6 +148,7 @@ Public Class Login
 
         If isFound Then
             POSSettings.Show()
+            Me.Close()
         Else
             TTip.Show("please enter admin password..!", txtPassword, 0, 25, 2000)
             txtPassword.Focus()
