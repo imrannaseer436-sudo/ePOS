@@ -522,6 +522,23 @@ Public Class POS
 
     End Sub
 
+    'Imran
+    Private Function IsValidQuantity(ByVal quantityText As String) As Boolean
+
+        Dim quantity As Decimal
+
+        If String.IsNullOrWhiteSpace(quantityText) Then
+            Return False
+        End If
+
+        If Not Decimal.TryParse(quantityText.Trim(), quantity) Then
+            Return False
+        End If
+
+        Return quantity > 0
+
+    End Function
+    'Imran
     Private Sub txtCode_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtCode.KeyDown
 
         If e.KeyCode = Keys.Enter Then
@@ -734,9 +751,17 @@ Public Class POS
 
     Private Sub Addrows()
 
-        If Val(txtQty.Text) = 0 Then
-            TTip.Show("Quantity not defined..!", txtQty, 0, 25, 2000)
+        'If Val(txtQty.Text) = 0 Then
+        '    TTip.Show("Quantity not defined..!", txtQty, 0, 25, 2000)
+        '    Exit Sub
+
+        'Imran
+        If Not IsValidQuantity(txtQty.Text) Then
+            TTip.Show("Please enter a valid quantity greater than zero..!", txtQty, 0, 25, 2000)
+            txtQty.Focus()
+            txtQty.SelectAll()
             Exit Sub
+            'Imran
         ElseIf txtSP.Text.Trim = "" Then
             TTip.Show("Enter sales person number..!", txtSP, 0, 25, 2000)
             Exit Sub
@@ -1129,6 +1154,23 @@ Public Class POS
                 TTip.Show("No items to generate to bill..!", btnStore, 0, 25, 2000)
                 Exit Function
             End If
+
+            'Imran
+            'Validate only zero rate in TG rows
+            For i As Integer = 0 To TG.Rows.Count - 1
+
+                If TG.Item(6, i).Value IsNot Nothing AndAlso Not IsDBNull(TG.Item(6, i).Value) AndAlso
+                IsNumeric(TG.Item(6, i).Value) AndAlso Val(TG.Item(6, i).Value) = 0 Then
+
+                    TTip.Show("Rate cannot be zero in row " & (i + 1) & ".", btnStore, 0, 25, 3000)
+
+                    TG.CurrentCell = TG.Item(6, i)
+                    TG.Focus()
+                    Exit Function
+                End If
+
+            Next
+            'Imran
 
             If ESSA.IsDuplicateExists(TG, 0) Then
                 TTip.Show("Duplicate barcode exists", btnStore, 0, 25, 2000)
